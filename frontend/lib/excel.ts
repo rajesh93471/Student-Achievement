@@ -27,3 +27,18 @@ export async function readExcelFile(file: File): Promise<ParsedRow[]> {
     return normalized;
   });
 }
+
+export function downloadExcelFile({
+  rows,
+  fileName,
+  sheetName = "Sheet1",
+}: {
+  rows: Record<string, string | number | null | undefined>[];
+  fileName: string;
+  sheetName?: string;
+}) {
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  XLSX.writeFile(workbook, fileName);
+}

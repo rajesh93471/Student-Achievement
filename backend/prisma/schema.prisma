@@ -1,0 +1,135 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String           @id @default(cuid())
+  name           String
+  email          String           @unique
+  password       String
+  role           String           @default("student")
+  department     String?
+  settings       Json?
+  isActive       Boolean          @default(true)
+  student        Student?
+  parentProfile  ParentProfile?
+  facultyProfile FacultyProfile?
+  achievementsVerified Achievement[] @relation("AchievementVerifiedBy")
+  notifications  Notification[]   @relation("NotificationSender")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model Student {
+  id                String        @id @default(cuid())
+  userId            String        @unique
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentId         String        @unique
+  fullName          String
+  department        String
+  program           String
+  admissionCategory String?
+  year              Int
+  semester          Int
+  graduationYear    Int?
+  email             String
+  phone             String?
+  address           String?
+  profilePhotoUrl   String?
+  cgpa              Float?
+  subjectsCompleted Json?
+  backlogs          Int           @default(0)
+  achievementsCount Int           @default(0)
+  documentsCount    Int           @default(0)
+  achievements      Achievement[]
+  documents         Document[]
+  parents           ParentProfile[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model ParentProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentDbId String
+  student   Student  @relation(fields: [studentDbId], references: [id], onDelete: Cascade)
+  studentId String
+  relation  String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FacultyProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department  String
+  designation String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Achievement {
+  id                 String   @id @default(cuid())
+  studentId          String
+  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title              String
+  description        String   @db.Text
+  date               DateTime
+  academicYear       String?
+  semester           Int?
+  category           String
+  activityType       String?
+  certificateUrl     String?
+  certificateKey     String?
+  status             String   @default("pending")
+  feedback           String?
+  recommendedForAward Boolean @default(false)
+  verifiedById       String?
+  verifiedBy         User?    @relation("AchievementVerifiedBy", fields: [verifiedById], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title     String
+  type      String
+  fileUrl   String
+  fileKey   String
+  mimeType  String?
+  size      Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("NotificationSender", fields: [senderId], references: [id], onDelete: Cascade)
+  senderName String?
+  senderEmail String?
+  senderRole String?
+  message    String
+  status     String   @default("unread")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Department {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  code    String   @unique
+  hodName String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

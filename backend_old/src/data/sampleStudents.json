@@ -1,0 +1,75 @@
+[
+  {
+    "studentId": "CSE2023001",
+    "name": "Ananya Sharma",
+    "department": "Computer Science",
+    "program": "B.Tech CSE",
+    "year": 3,
+    "semester": 6,
+    "email": "ananya.sharma@example.edu",
+    "phone": "9876543210",
+    "cgpa": 9.2,
+    "backlogs": 0,
+    "subjectsCompleted": ["DBMS", "Operating Systems", "Computer Networks"],
+    "achievements": [
+      {
+        "title": "National Hackathon Finalist",
+        "description": "Built an AI-based campus assistance platform.",
+        "date": "2025-09-18",
+        "category": "hackathon",
+        "status": "approved"
+      },
+      {
+        "title": "AWS Cloud Practitioner",
+        "description": "Industry certification in foundational cloud computing.",
+        "date": "2025-11-04",
+        "category": "certification",
+        "status": "approved"
+      }
+    ]
+  },
+  {
+    "studentId": "ECE2023007",
+    "name": "Rahul Menon",
+    "department": "Electronics",
+    "program": "B.Tech ECE",
+    "year": 2,
+    "semester": 4,
+    "email": "rahul.menon@example.edu",
+    "phone": "9123456780",
+    "cgpa": 8.8,
+    "backlogs": 1,
+    "subjectsCompleted": ["Signals and Systems", "Digital Electronics"],
+    "achievements": [
+      {
+        "title": "Embedded Systems Internship",
+        "description": "Completed an 8-week embedded systems internship.",
+        "date": "2025-07-12",
+        "category": "internship",
+        "status": "pending"
+      }
+    ]
+  },
+  {
+    "studentId": "MBA2024003",
+    "name": "Priya Nair",
+    "department": "Management",
+    "program": "MBA",
+    "year": 1,
+    "semester": 2,
+    "email": "priya.nair@example.edu",
+    "phone": "9012345678",
+    "cgpa": 9.0,
+    "backlogs": 0,
+    "subjectsCompleted": ["Business Analytics", "Marketing Management"],
+    "achievements": [
+      {
+        "title": "Inter-college Business Case Winner",
+        "description": "Won first place in a national case study challenge.",
+        "date": "2025-10-21",
+        "category": "competition",
+        "status": "approved"
+      }
+    ]
+  }
+]

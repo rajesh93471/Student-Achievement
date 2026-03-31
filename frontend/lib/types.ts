@@ -19,6 +19,7 @@ export interface StudentProfile {
   admissionCategory?: string;
   year: number;
   semester: number;
+  graduationYear?: number;
   email: string;
   phone?: string;
   address?: string;
