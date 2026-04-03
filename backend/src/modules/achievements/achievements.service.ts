@@ -1,12 +1,14 @@
-import { ForbiddenException, NotFoundException, Injectable } from "@nestjs/common";
-import { PrismaService } from "../../common/prisma/prisma.service";
-import { createDownloadUrl } from "../../utils/s3";
+import {
+  ForbiddenException,
+  NotFoundException,
+  Injectable,
+} from '@nestjs/common';
+import { PrismaService } from '../../common/prisma/prisma.service';
+import { createDownloadUrl } from '../../utils/s3';
 
 @Injectable()
 export class AchievementsService {
-  constructor(
-    private readonly prisma: PrismaService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   private async syncStudentAchievementCount(studentId: string) {
     const total = await this.prisma.achievement.count({
@@ -20,31 +22,39 @@ export class AchievementsService {
   }
 
   private async getScopedStudent(user: any) {
-    if (user.role !== "student") return null;
+    if (user.role !== 'student') return null;
     return this.prisma.student.findUnique({ where: { userId: user.id } });
   }
 
   async listAchievements(user: any, query: any) {
     const criteria: any = {};
-    if (user.role === "student") {
+    if (user.role === 'student') {
       const student = await this.getScopedStudent(user);
-      if (!student) throw new NotFoundException("Student profile not found");
+      if (!student) throw new NotFoundException('Student profile not found');
       criteria.studentId = student.id;
     }
-    if (user.role === "faculty") {
+    if (user.role === 'faculty') {
       criteria.student = { department: user.department };
     }
-    if (user.role === "admin" && query.department) {
+    if (user.role === 'admin' && query.department) {
       criteria.student = { department: query.department };
     }
     if (query.category) criteria.category = query.category;
     if (query.academicYear) criteria.academicYear = query.academicYear;
     if (query.semester) criteria.semester = Number(query.semester);
-    if (query.status) criteria.status = query.status;
 
     const achievements = await this.prisma.achievement.findMany({
       where: criteria,
-      include: { student: { select: { fullName: true, studentId: true, department: true, graduationYear: true } } },
+      include: {
+        student: {
+          select: {
+            fullName: true,
+            studentId: true,
+            department: true,
+            graduationYear: true,
+          },
+        },
+      },
     });
     const hydratedAchievements = await Promise.all(
       achievements.map(async (achievement) => {
@@ -53,7 +63,9 @@ export class AchievementsService {
         }
 
         try {
-          const payload = await createDownloadUrl({ key: achievement.certificateKey });
+          const payload = await createDownloadUrl({
+            key: achievement.certificateKey,
+          });
           return {
             ...achievement,
             certificateUrl: payload.downloadUrl,
@@ -69,21 +81,24 @@ export class AchievementsService {
 
   async createAchievement(user: any, body: any) {
     const student = await this.getScopedStudent(user);
-    if (!student) throw new NotFoundException("Student profile not found");
+    if (!student) throw new NotFoundException('Student profile not found');
 
-    const academicYear = body.academicYear || (student.year ? `Year ${student.year}` : undefined);
+    const academicYear =
+      body.academicYear || (student.year ? `Year ${student.year}` : undefined);
     const semester = body.semester ?? student.semester;
-    const title = String(body.title || "").trim();
-    const category = String(body.category || "").trim();
-    const description = String(body.description || "").trim();
-    const certificateUrl = typeof body.certificateUrl === "string" ? body.certificateUrl.trim() : "";
-    const certificateKey = typeof body.certificateKey === "string" ? body.certificateKey.trim() : "";
+    const title = String(body.title || '').trim();
+    const category = String(body.category || '').trim();
+    const description = String(body.description || '').trim();
+    const certificateUrl =
+      typeof body.certificateUrl === 'string' ? body.certificateUrl.trim() : '';
+    const certificateKey =
+      typeof body.certificateKey === 'string' ? body.certificateKey.trim() : '';
 
     if (!title) {
-      throw new NotFoundException("Achievement title is required");
+      throw new NotFoundException('Achievement title is required');
     }
     if (!category) {
-      throw new NotFoundException("Achievement category is required");
+      throw new NotFoundException('Achievement category is required');
     }
 
     const achievement = await this.prisma.achievement.create({
@@ -92,11 +107,16 @@ export class AchievementsService {
         title,
         description,
         category,
-        activityType: body.activityType ? String(body.activityType).trim() : null,
+        activityType: body.activityType
+          ? String(body.activityType).trim()
+          : null,
         organizedBy: body.organizedBy ? String(body.organizedBy).trim() : null,
         position: body.position ? String(body.position).trim() : null,
         // Keep DB-safe values here; listAchievements can hydrate a signed URL from the key when needed.
-        certificateUrl: certificateUrl && certificateUrl.length <= 180 ? certificateUrl : null,
+        certificateUrl:
+          certificateUrl && certificateUrl.length <= 180
+            ? certificateUrl
+            : null,
         certificateKey: certificateKey || null,
         academicYear,
         semester,
@@ -112,22 +132,37 @@ export class AchievementsService {
       where: { id },
       include: { student: true },
     });
-    if (!achievement) throw new NotFoundException("Achievement not found");
+    if (!achievement) throw new NotFoundException('Achievement not found');
     const ownerId = (achievement.student as any)?.userId;
-    if (user.role === "student" && String(ownerId) !== String(user.id)) {
-      throw new ForbiddenException("Forbidden");
+    if (user.role === 'student' && String(ownerId) !== String(user.id)) {
+      throw new ForbiddenException('Forbidden');
     }
     const updateData = {
-      title: body.title !== undefined ? String(body.title || "").trim() : undefined,
-      description: body.description !== undefined ? String(body.description || "").trim() : undefined,
-      category: body.category !== undefined ? String(body.category || "").trim() : undefined,
-      activityType: body.activityType !== undefined ? String(body.activityType || "").trim() : undefined,
-      organizedBy: body.organizedBy !== undefined ? String(body.organizedBy || "").trim() : undefined,
-      position: body.position !== undefined ? String(body.position || "").trim() : undefined,
+      title:
+        body.title !== undefined ? String(body.title || '').trim() : undefined,
+      description:
+        body.description !== undefined
+          ? String(body.description || '').trim()
+          : undefined,
+      category:
+        body.category !== undefined
+          ? String(body.category || '').trim()
+          : undefined,
+      activityType:
+        body.activityType !== undefined
+          ? String(body.activityType || '').trim()
+          : undefined,
+      organizedBy:
+        body.organizedBy !== undefined
+          ? String(body.organizedBy || '').trim()
+          : undefined,
+      position:
+        body.position !== undefined
+          ? String(body.position || '').trim()
+          : undefined,
       date: body.date ? new Date(body.date) : undefined,
       academicYear: body.academicYear,
       semester: body.semester,
-      status: "pending",
     };
     const updated = await this.prisma.achievement.update({
       where: { id },
@@ -141,28 +176,14 @@ export class AchievementsService {
       where: { id },
       include: { student: true },
     });
-    if (!achievement) throw new NotFoundException("Achievement not found");
+    if (!achievement) throw new NotFoundException('Achievement not found');
     const ownerId = (achievement.student as any)?.userId;
-    if (user.role === "student" && String(ownerId) !== String(user.id)) {
-      throw new ForbiddenException("Forbidden");
+    if (user.role === 'student' && String(ownerId) !== String(user.id)) {
+      throw new ForbiddenException('Forbidden');
     }
     await this.prisma.achievement.delete({ where: { id } });
     await this.syncStudentAchievementCount(achievement.studentId);
-    return { message: "Achievement deleted" };
+    return { message: 'Achievement deleted' };
   }
 
-  async reviewAchievement(user: any, id: string, body: any) {
-    const achievement = await this.prisma.achievement.findUnique({ where: { id } });
-    if (!achievement) throw new NotFoundException("Achievement not found");
-    const updated = await this.prisma.achievement.update({
-      where: { id },
-      data: {
-        status: body.status,
-        feedback: body.feedback,
-        recommendedForAward: body.recommendedForAward || false,
-        verifiedById: user.id,
-      },
-    });
-    return { achievement: updated };
-  }
 }

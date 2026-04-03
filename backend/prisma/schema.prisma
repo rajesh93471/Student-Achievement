@@ -92,9 +92,7 @@ model Achievement {
   position           String?
   certificateUrl     String?  @db.Text
   certificateKey     String?  @db.Text
-  status             String   @default("pending")
-  feedback           String?
-  recommendedForAward Boolean @default(false)
+  status             String   @default("approved")
   verifiedById       String?
   verifiedBy         User?    @relation("AchievementVerifiedBy", fields: [verifiedById], references: [id])
   createdAt          DateTime @default(now())

@@ -54,7 +54,6 @@ export default function ReportsPage() {
         { label: "Overview", href: "/admin" },
         { label: "Students", href: "/admin/students" },
         { label: "Student achievements", href: "/admin/student-achievements" },
-        { label: "Approvals", href: "/admin/approvals" },
         { label: "Analytics", href: "/admin/analytics" },
         { label: "Reports", href: "/admin/reports" },
       ]}

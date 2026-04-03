@@ -13,13 +13,15 @@ import {
   FileText, 
   FileSpreadsheet, 
   ExternalLink,
-  ChevronRight,
+  ChevronDown,
   GraduationCap,
   Calendar,
   Layers,
   Award,
-  Loader2
+  Loader2,
+  Archive
 } from "lucide-react";
+import { Select } from "@/components/ui/select";
 
 const ACHIEVEMENT_GROUPS = {
   technical: [
@@ -53,7 +55,6 @@ const ACHIEVEMENT_GROUPS = {
 
 type AchievementGroup = keyof typeof ACHIEVEMENT_GROUPS;
 
-const selectClasses = "w-full bg-white border border-surface-300 rounded-xl px-4 py-2.5 text-ink font-sans text-sm outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-100 cursor-pointer shadow-sm appearance-none";
 const labelClasses = "block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2";
 
 export default function AdminStudentAchievementsPage() {
@@ -66,7 +67,7 @@ export default function AdminStudentAchievementsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-student-achievements"],
-    queryFn: () => api<{ achievements: any[] }>("/achievements?status=approved", { token }),
+    queryFn: () => api<{ achievements: any[] }>("/achievements", { token }),
     enabled: !!token,
   });
 
@@ -128,7 +129,7 @@ export default function AdminStudentAchievementsPage() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
 
-  const handleExport = async (format: "pdf" | "excel") => {
+  const handleExport = async (format: "pdf" | "excel" | "zip") => {
     if (!token) return;
     setDownloadState(`Preparing ${format.toUpperCase()}...`);
     try {
@@ -147,7 +148,8 @@ export default function AdminStudentAchievementsPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `achievements-report.${format === "pdf" ? "pdf" : "xlsx"}`;
+      const extension = format === "pdf" ? "pdf" : format === "excel" ? "xlsx" : "zip";
+      link.download = `achievements-report.${extension}`;
       link.click();
       window.URL.revokeObjectURL(url);
       setDownloadState("");
@@ -164,57 +166,54 @@ export default function AdminStudentAchievementsPage() {
         { label: "Overview", href: "/admin" },
         { label: "Students", href: "/admin/students" },
         { label: "Student achievements", href: "/admin/student-achievements" },
-        { label: "Approvals", href: "/admin/approvals" },
         { label: "Analytics", href: "/admin/analytics" },
         { label: "Reports", href: "/admin/reports" },
       ]}
     >
-      {/* ── Filters Card ── */}
       <div className="bg-white border border-surface-200 rounded-[32px] p-6 mb-6 shadow-panel animate-fade-up">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="relative group">
+          <div>
             <label className={labelClasses}>
               <GraduationCap size={14} className="inline mr-1" />
               Graduation Year
             </label>
-            <select className={selectClasses} value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
+            <Select value={selectedYear} onChange={e => setSelectedYear(e.target.value)}>
               <option value="all">ALL YEARS</option>
               {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
+            </Select>
           </div>
-          <div className="relative group">
+          <div>
             <label className={labelClasses}>
               <Calendar size={14} className="inline mr-1" />
               Award Year
             </label>
-            <select className={selectClasses} value={selectedAchievementYear} onChange={e => setSelectedAchievementYear(e.target.value)}>
+            <Select value={selectedAchievementYear} onChange={e => setSelectedAchievementYear(e.target.value)}>
               <option value="all">ALL YEARS</option>
               {achievementYearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
+            </Select>
           </div>
-          <div className="relative group">
+          <div>
             <label className={labelClasses}>
               <Layers size={14} className="inline mr-1" />
               Stream
             </label>
-            <select 
-              className={selectClasses} 
+            <Select
               value={selectedGroup} 
               onChange={e => { setSelectedGroup(e.target.value as AchievementGroup); setSelectedCategory("all"); }}
             >
               <option value="technical">TECHNICAL</option>
               <option value="non-technical">NON-TECHNICAL</option>
-            </select>
+            </Select>
           </div>
-          <div className="relative group">
+          <div>
             <label className={labelClasses}>
               <Award size={14} className="inline mr-1" />
               Category
             </label>
-            <select className={selectClasses} value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+            <Select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
               <option value="all">ALL CATEGORIES</option>
               {ACHIEVEMENT_GROUPS[selectedGroup].map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -239,6 +238,13 @@ export default function AdminStudentAchievementsPage() {
               >
                 <FileSpreadsheet size={14} />
                 EXCEL
+              </button>
+              <button 
+                className="flex items-center gap-2 px-4 py-2 bg-danger-100 text-danger-600 border border-danger-100 rounded-xl text-[10px] font-bold hover:bg-danger-600 hover:text-white transition-all shadow-sm"
+                onClick={() => handleExport("zip")}
+              >
+                <Archive size={14} />
+                ZIP
               </button>
            </div>
         </div>

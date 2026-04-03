@@ -22,12 +22,6 @@ const CATEGORY_STYLES: Record<string, string> = {
   research:      "bg-teal-100 text-teal-700 border-teal-200",
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  pending:  "bg-amber-50 text-amber-700 border-amber-200",
-  rejected: "bg-rose-50 text-rose-700 border-rose-200",
-};
-
 /* ─── Stat card ──────────────────────────────────────────────────────────── */
 function DashStatCard({
   label,
@@ -99,7 +93,7 @@ export default function StudentDashboardPage() {
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <DashStatCard label="CGPA"         value={student?.cgpa ?? "-"}               helper="Latest cumulative GPA"       accent="amber" delay={0}   />
         <DashStatCard label="Semester"     value={student?.semester ?? "-"}           helper="Current academic term"       accent="blue" delay={60}  />
-        <DashStatCard label="Achievements" value={student?.achievementsCount ?? 0}    helper="Approved + pending entries"  accent="emerald" delay={120} />
+        <DashStatCard label="Achievements" value={student?.achievementsCount ?? 0}    helper="Total registered entries"  accent="emerald" delay={120} />
         <DashStatCard label="Documents"    value={student?.documentsCount ?? 0}       helper="Stored academic records"     accent="purple" delay={180} />
       </section>
 
@@ -178,9 +172,8 @@ export default function StudentDashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {achievements.map((item) => {
-              const bgClass = CATEGORY_STYLES[item.category] || "bg-slate-50 text-slate-500 border-slate-100";
-              const statusClass = STATUS_STYLE[item.status] || "bg-slate-50 text-slate-500 border-slate-100";
+              {achievements.map((item) => {
+                const bgClass = CATEGORY_STYLES[item.category] || "bg-slate-50 text-slate-500 border-slate-100";
 
               return (
                 <div key={item._id} className="flex flex-col bg-white border border-surface-100 rounded-2xl overflow-hidden hover:border-brand-200 hover:shadow-panel transition-all group">
@@ -194,20 +187,12 @@ export default function StudentDashboardPage() {
 
                   {/* Body (details grid) */}
                   <div className="p-4 flex-1 flex flex-col gap-3">
-                    <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Type</p>
                         <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold border ${bgClass} uppercase tracking-tighter`}>
                           {item.category?.slice(0, 10)}
                         </span>
                       </div>
-                      <div>
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Status</p>
-                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold border ${statusClass} uppercase tracking-tighter`}>
-                          {item.status}
-                        </span>
-                      </div>
-                    </div>
                     
                     <div>
                       <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Date</p>

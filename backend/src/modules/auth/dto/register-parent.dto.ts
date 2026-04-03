@@ -1,4 +1,10 @@
-import { IsEmail, IsOptional, IsString, Matches, MinLength } from "class-validator";
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterParentDto {
   @IsString()
@@ -15,7 +21,7 @@ export class RegisterParentDto {
   @IsString()
   @MinLength(2)
   @Matches(/^\d{3}[A-Z]{2}\d{5}$/, {
-    message: "Registration number must follow the format 231FA04023",
+    message: 'Registration number must follow the format 231FA04023',
   })
   studentId: string;
 

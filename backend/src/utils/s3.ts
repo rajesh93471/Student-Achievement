@@ -1,5 +1,9 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const getS3Config = () => ({
   region: process.env.AWS_REGION,
@@ -19,13 +23,26 @@ const getS3Client = () => {
   });
 };
 
-export const createUploadUrl = async ({ key, contentType }: { key: string; contentType: string }) => {
+export const createUploadUrl = async ({
+  key,
+  contentType,
+}: {
+  key: string;
+  contentType: string;
+}) => {
   const { region, bucketName } = getS3Config();
   const s3Client = getS3Client();
-  console.log("[s3] region=", region, "bucket=", bucketName, "s3Client=", !!s3Client);
+  console.log(
+    '[s3] region=',
+    region,
+    'bucket=',
+    bucketName,
+    's3Client=',
+    !!s3Client,
+  );
 
   if (!s3Client || !bucketName) {
-    console.log("[s3] returning mock URLs");
+    console.log('[s3] returning mock URLs');
     return {
       key,
       uploadUrl: `https://example.invalid/mock-upload/${key}`,

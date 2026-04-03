@@ -1,11 +1,11 @@
-import { IsIn, IsString, MinLength } from "class-validator";
+import { IsIn, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
   @IsString()
   identifier: string;
 
   @IsString()
-  @IsIn(["student", "admin", "parent", "faculty"])
+  @IsIn(['student', 'admin', 'parent', 'faculty'])
   role: string;
 
   @IsString()

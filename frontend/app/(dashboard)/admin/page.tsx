@@ -9,7 +9,8 @@ import { DepartmentBarChart, GrowthLineChart } from "@/components/charts/overvie
 import { useAuth } from "@/components/layout/providers";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { BarChart3, TrendingUp, Users, Award, FileCheck, Filter } from "lucide-react";
+import { BarChart3, TrendingUp, Users, Award, FileCheck, Filter, ChevronDown } from "lucide-react";
+import { Select } from "@/components/ui/select";
 
 const ACADEMIC_YEAR_OPTIONS = [
   { value: "Year 1", label: "I" },
@@ -49,7 +50,6 @@ export default function AdminDashboardPage() {
         { label: "Overview", href: "/admin" },
         { label: "Students", href: "/admin/students" },
         { label: "Student achievements", href: "/admin/student-achievements" },
-        { label: "Approvals", href: "/admin/approvals" },
         { label: "Analytics", href: "/admin/analytics" },
         { label: "Reports", href: "/admin/reports" },
       ]}
@@ -63,10 +63,9 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* STATS */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-up">
+      <section className="grid grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
         <StatCard label="Students" value={data?.metrics.totalStudents ?? 0} helper="Total active profiles" />
         <StatCard label="Achievements" value={data?.metrics.totalAchievements ?? 0} helper="System-wide entries" />
-        <StatCard label="Pending approvals" value={data?.metrics.pendingApprovals ?? 0} helper="Need admin action" />
         <StatCard label="Documents" value={data?.metrics.totalDocuments ?? 0} helper="Securely stored files" />
       </section>
 
@@ -159,8 +158,8 @@ export default function AdminDashboardPage() {
           
           {/* Filters Bar */}
           <div className="p-3 grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white border-b border-surface-50">
-            <select
-              className="bg-surface-50 border border-surface-100 rounded-lg p-1.5 text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-brand-200 transition-shadow appearance-none"
+            <Select
+              className="bg-surface-50 border border-surface-100 rounded-lg p-1.5 text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-brand-200 transition-shadow"
               value={filterCategory}
               onChange={(event) => setFilterCategory(event.target.value)}
             >
@@ -168,9 +167,9 @@ export default function AdminDashboardPage() {
               {(data?.categoryData || []).map((item: any, idx: number) => (
                 <option key={item._id || `category-${idx}`} value={item._id}>{item._id}</option>
               ))}
-            </select>
-            <select
-              className="bg-surface-50 border border-surface-100 rounded-lg p-1.5 text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-brand-200 transition-shadow appearance-none"
+            </Select>
+            <Select
+              className="bg-surface-50 border border-surface-100 rounded-lg p-1.5 text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-brand-200 transition-shadow"
               value={filterDepartment}
               onChange={(event) => setFilterDepartment(event.target.value)}
             >
@@ -178,9 +177,9 @@ export default function AdminDashboardPage() {
               {(data?.departmentData || []).map((item: any, idx: number) => (
                 <option key={item._id || `dept-${idx}`} value={item._id}>{item._id}</option>
               ))}
-            </select>
-            <select
-              className="bg-surface-50 border border-surface-100 rounded-lg p-1.5 text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-brand-200 transition-shadow appearance-none"
+            </Select>
+            <Select
+              className="bg-surface-50 border border-surface-100 rounded-lg p-1.5 text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-brand-200 transition-shadow"
               value={filterSemester}
               onChange={(event) => setFilterSemester(event.target.value)}
             >
@@ -188,9 +187,9 @@ export default function AdminDashboardPage() {
               {[1,2].map((sem) => (
                 <option key={sem} value={String(sem)}>Sem {sem}</option>
               ))}
-            </select>
-            <select
-              className="bg-surface-50 border border-surface-100 rounded-lg p-1.5 text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-brand-200 transition-shadow appearance-none"
+            </Select>
+            <Select
+              className="bg-surface-50 border border-surface-100 rounded-lg p-1.5 text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-brand-200 transition-shadow"
               value={filterYear}
               onChange={(event) => setFilterYear(event.target.value)}
             >
@@ -198,7 +197,7 @@ export default function AdminDashboardPage() {
               {ACADEMIC_YEAR_OPTIONS.map((year) => (
                 <option key={year.value} value={year.value}>{year.label}</option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div className="p-3 flex-1 flex flex-col gap-2">

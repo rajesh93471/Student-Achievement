@@ -8,7 +8,8 @@ import { Modal } from "@/components/ui/modal";
 import { useAuth } from "@/components/layout/providers";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { Plus, Filter, Calendar, Award, ExternalLink, Edit3, Trash2 } from "lucide-react";
+import { Plus, Filter, Calendar, Award, ExternalLink, Edit3, Trash2, ChevronDown } from "lucide-react";
+import { Select } from "@/components/ui/select";
 
 /* ─── Category accent map ────────────────────────────────────────────────── */
 const CATEGORY_STYLES: Record<string, string> = {
@@ -23,12 +24,6 @@ const CATEGORY_STYLES: Record<string, string> = {
   cultural:      "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
   club:          "bg-indigo-100 text-indigo-700 border-indigo-200",
   research:      "bg-teal-100 text-teal-700 border-teal-200",
-};
-
-const STATUS_STYLE: Record<string, string> = {
-  approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  pending:  "bg-amber-50 text-amber-700 border-amber-200",
-  rejected: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
 const ORGANIZED_BY_OPTIONS = ["University", "NO / Outside Campus"];
@@ -172,14 +167,15 @@ export default function StudentAchievementsPage() {
             </div>
           ))}
           {achievementYears.length > 3 && (
-            <select 
-              className="bg-transparent text-[10px] font-bold text-slate-500 px-2 outline-none cursor-pointer uppercase tracking-tight"
+            <Select 
+              className="bg-transparent border-none shadow-none py-0 px-2 h-auto text-[10px] w-auto inline-flex pr-6"
+              containerClassName="w-auto"
               value={achievementYears.includes(selectedYear) ? selectedYear : ""}
               onChange={(e) => setSelectedYear(e.target.value)}
             >
               <option value="">MORE</option>
               {achievementYears.slice(3).map(yr => <option key={yr} value={yr}>{yr}</option>)}
-            </select>
+            </Select>
           )}
         </div>
 
@@ -197,7 +193,6 @@ export default function StudentAchievementsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredAchievements.map((item, idx) => {
           const styleClass = CATEGORY_STYLES[item.category] || "bg-slate-50 text-slate-500 border-slate-100";
-          const statusClass = STATUS_STYLE[item.status] || "bg-slate-50 text-slate-500 border-slate-100";
           const isEditing = editingId === item._id;
           const achievementYear = item.date ? new Date(item.date).getFullYear() : "";
 
@@ -210,11 +205,8 @@ export default function StudentAchievementsPage() {
               {/* Header */}
               <div className="px-5 py-3 border-b border-surface-50 flex flex-col gap-2 min-h-[90px] justify-center bg-surface-50/30 group-hover:bg-brand-50/20 transition-colors">
                 <div className="flex items-center justify-between gap-3">
-                   <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border shadow-sm", styleClass)}>
+                  <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border shadow-sm", styleClass)}>
                     {item.category?.slice(0, 10)}
-                  </span>
-                  <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border shadow-sm", statusClass)}>
-                    {item.status}
                   </span>
                 </div>
                 <h3 className="font-display font-semibold text-base text-ink leading-tight line-clamp-1 group-hover:text-brand-700 transition-colors tracking-tight">
@@ -287,9 +279,9 @@ export default function StudentAchievementsPage() {
                     <textarea className={cn(inputClasses, "min-h-[100px]")} value={editForm.description} onChange={e=>setEditForm(c=>({...c, description:e.target.value}))} placeholder="Description" />
                     <div className="grid grid-cols-2 gap-3">
                        <input className={inputClasses} type="date" value={editForm.date} onChange={e=>setEditForm(c=>({...c, date:e.target.value}))} />
-                       <select className={inputClasses} value={editForm.category} onChange={e=>setEditForm(c=>({...c, category:e.target.value}))}>
+                       <Select value={editForm.category} onChange={e=>setEditForm(c=>({...c, category:e.target.value}))}>
                           {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                       </select>
+                       </Select>
                     </div>
                     <div className="flex gap-3 mt-auto">
                       <button className="flex-1 bg-brand-600 text-white font-bold py-2.5 rounded-xl text-xs hover:bg-brand-700 transition-colors" onClick={() => updateMutation.mutate({ id: item._id, values: editForm })}>SAVE</button>

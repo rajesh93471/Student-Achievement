@@ -1,14 +1,20 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
-import { Observable } from "rxjs";
-import { map } from "rxjs/operators";
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 const isPlainObject = (value: any) =>
   value &&
-  typeof value === "object" &&
+  typeof value === 'object' &&
   !Array.isArray(value) &&
   !(value instanceof Date) &&
   !Buffer.isBuffer(value) &&
-  (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);
+  (Object.getPrototypeOf(value) === Object.prototype ||
+    Object.getPrototypeOf(value) === null);
 
 const attachMongoId = (data: any, seen = new WeakMap<object, any>()): any => {
   if (Array.isArray(data)) {
@@ -30,14 +36,14 @@ const attachMongoId = (data: any, seen = new WeakMap<object, any>()): any => {
     const next: any = {};
     seen.set(data, next);
     Object.keys(data).forEach((key) => {
-      const value = (data as any)[key];
-      if (key === "id" && !("_id" in data)) {
+      const value = data[key];
+      if (key === 'id' && !('_id' in data)) {
         next._id = value;
       }
       next[key] = attachMongoId(value, seen);
     });
-    if ("id" in data && !("_id" in data)) {
-      next._id = (data as any).id;
+    if ('id' in data && !('_id' in data)) {
+      next._id = data.id;
     }
     return next;
   }
@@ -48,6 +54,8 @@ const attachMongoId = (data: any, seen = new WeakMap<object, any>()): any => {
 export class MongoIdInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const response = context.switchToHttp().getResponse();
-    return next.handle().pipe(map((data) => (data === response ? data : attachMongoId(data))));
+    return next
+      .handle()
+      .pipe(map((data) => (data === response ? data : attachMongoId(data))));
   }
 }

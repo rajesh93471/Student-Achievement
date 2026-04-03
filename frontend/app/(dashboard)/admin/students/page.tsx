@@ -21,8 +21,10 @@ import {
   ExternalLink,
   ChevronRight,
   Info,
-  Loader2
+  Loader2,
+  ChevronDown
 } from "lucide-react";
+import { Select } from "@/components/ui/select";
 
 const inputClasses = "w-full bg-white border border-surface-300 rounded-xl px-4 py-3 text-ink font-sans text-sm outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-100";
 const labelClasses = "block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2";
@@ -105,7 +107,6 @@ export default function AdminStudentsPage() {
         { label: "Overview", href: "/admin" },
         { label: "Students", href: "/admin/students" },
         { label: "Student achievements", href: "/admin/student-achievements" },
-        { label: "Approvals", href: "/admin/approvals" },
         { label: "Analytics", href: "/admin/analytics" },
         { label: "Reports", href: "/admin/reports" },
       ]}
@@ -216,16 +217,16 @@ export default function AdminStudentsPage() {
                   
                   <div>
                     <label className={labelClasses}>Year of Study</label>
-                    <select name="year" className={inputClasses} required>
+                    <Select name="year" required>
                        {[1, 2, 3, 4].map(y => <option key={y} value={y}>Year {y}</option>)}
-                    </select>
+                    </Select>
                   </div>
                   <div>
                     <label className={labelClasses}>Current Semester</label>
-                    <select name="semester" className={inputClasses} required>
+                    <Select name="semester" required>
                        <option value={1}>Semester 1</option>
                        <option value={2}>Semester 2</option>
-                    </select>
+                    </Select>
                   </div>
                   <div>
                     <label className={labelClasses}>Graduation Year</label>
@@ -326,14 +327,14 @@ export default function AdminStudentsPage() {
                        <div><label className={labelClasses}>Dept</label><input name="department" className={cn(inputClasses, "py-2 px-3")} defaultValue={selectedStudent?.department} /></div>
                        <div><label className={labelClasses}>Program</label><input name="program" className={cn(inputClasses, "py-2 px-3")} defaultValue={selectedStudent?.program} /></div>
                        <div><label className={labelClasses}>Year</label>
-                         <select name="year" className={cn(inputClasses, "py-2 px-3")} defaultValue={selectedStudent?.year}>
+                         <Select name="year" className="py-2 px-3" defaultValue={selectedStudent?.year}>
                            {[1,2,3,4].map(y => <option key={y} value={y}>Year {y}</option>)}
-                         </select>
+                         </Select>
                        </div>
                        <div><label className={labelClasses}>Sem</label>
-                          <select name="semester" className={cn(inputClasses, "py-2 px-3")} defaultValue={selectedStudent?.semester}>
+                          <Select name="semester" className="py-2 px-3" defaultValue={selectedStudent?.semester}>
                             <option value={1}>Sem 1</option><option value={2}>Sem 2</option>
-                          </select>
+                          </Select>
                        </div>
                        <div><label className={labelClasses}>CGPA</label><input name="cgpa" className={cn(inputClasses, "py-2 px-3")} type="number" step="0.01" defaultValue={selectedStudent?.cgpa} /></div>
                        <div><label className={labelClasses}>Phone</label><input name="phone" className={cn(inputClasses, "py-2 px-3")} defaultValue={selectedStudent?.phone} /></div>

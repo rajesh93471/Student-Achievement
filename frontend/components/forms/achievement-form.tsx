@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { uploadStudentFile } from "@/lib/uploads";
+import { Select } from "@/components/ui/select";
+import { ChevronDown } from "lucide-react";
 
 export interface AchievementFormValues {
   title: string;
@@ -11,7 +13,6 @@ export interface AchievementFormValues {
   date?: string;
   academicYear?: string;
   semester?: number;
-  activityType?: string;
   organizedBy?: string;
   position?: string;
 }
@@ -124,7 +125,6 @@ export function AchievementForm({
     date: dateValue,
     academicYear: defaultAcademicYear,
     semester: defaultSemester,
-    activityType: "",
     organizedBy: ORGANIZED_BY_OPTIONS[0],
     position: POSITION_OPTIONS[0],
   });
@@ -159,7 +159,6 @@ export function AchievementForm({
             ...values,
             title: values.title?.trim() || "",
             description: values.description?.trim() || "",
-            activityType: values.activityType?.trim() || "",
             date: achievementDate || safeDefaultAchievementDate,
             academicYear: values.academicYear || defaultAcademicYear,
             semester: values.semester ?? defaultSemester,
@@ -187,7 +186,6 @@ export function AchievementForm({
             date: safeDefaultAchievementDate,
             academicYear: defaultAcademicYear,
             semester: defaultSemester,
-            activityType: "",
             organizedBy: ORGANIZED_BY_OPTIONS[0],
             position: POSITION_OPTIONS[0],
           });
@@ -220,8 +218,7 @@ export function AchievementForm({
 
           <FieldLabel>
             <Label text="Achievement type" />
-            <select
-              className={inputClasses}
+            <Select
               value={selectedStream}
               onChange={(event) => {
                 const stream = event.target.value as AchievementStream;
@@ -234,19 +231,18 @@ export function AchievementForm({
                   {stream === "technical" ? "Technical" : "Non-technical"}
                 </option>
               ))}
-            </select>
+            </Select>
           </FieldLabel>
 
           <FieldLabel>
             <Label text={selectedStream === "technical" ? "Technical achievement" : "Non-technical achievement"} />
-            <select
-              className={inputClasses}
+            <Select
               {...register("category", { required: true })}
             >
               {CATEGORY_OPTIONS[selectedStream].map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
-            </select>
+            </Select>
           </FieldLabel>
 
           <button
@@ -279,12 +275,11 @@ export function AchievementForm({
             />
           </FieldLabel>
 
-          {/* Academic year + Semester + Activity type */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Academic year + Semester */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FieldLabel>
               <Label text="Academic year" />
-              <select
-                className={inputClasses}
+              <Select
                 {...register("academicYear")}
                 disabled
                 title="Auto-filled from your profile"
@@ -292,52 +287,41 @@ export function AchievementForm({
                 {ACADEMIC_YEAR_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
-              </select>
+              </Select>
             </FieldLabel>
             <FieldLabel>
               <Label text="Semester" />
-              <select
-                className={inputClasses}
+              <Select
                 {...register("semester", { valueAsNumber: true })}
                 disabled
                 title="Auto-filled from your profile"
               >
                 <option value={1}>Semester 1</option>
                 <option value={2}>Semester 2</option>
-              </select>
-            </FieldLabel>
-            <FieldLabel>
-              <Label text="Activity type" />
-              <input
-                className={inputClasses}
-                placeholder="e.g. Workshop"
-                {...register("activityType")}
-              />
+              </Select>
             </FieldLabel>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FieldLabel>
               <Label text="Organized by" />
-              <select
-                className={inputClasses}
+              <Select
                 {...register("organizedBy")}
               >
                 {ORGANIZED_BY_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
-              </select>
+              </Select>
             </FieldLabel>
             <FieldLabel>
               <Label text="Position" />
-              <select
-                className={inputClasses}
+              <Select
                 {...register("position")}
               >
                 {POSITION_OPTIONS.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
-              </select>
+              </Select>
             </FieldLabel>
           </div>
 

@@ -1,58 +1,69 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
-import { AdminService } from "./admin.service";
-import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { Roles } from "../../common/decorators/roles.decorator";
-import type { Response } from "express";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { AdminService } from './admin.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import type { Response } from 'express';
 
-@Controller("admin")
+@Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles("admin")
+@Roles('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  @Get("dashboard")
+  @Get('dashboard')
   getDashboard() {
     return this.adminService.getDashboard();
   }
 
-  @Get("insights")
+  @Get('insights')
   getAnalyticsInsights() {
     return this.adminService.getAnalyticsInsights();
   }
 
-  @Get("reports")
+  @Get('reports')
   getReports(@Query() query: any) {
     return this.adminService.getReports(query);
   }
 
-  @Get("reports/export")
+  @Get('reports/export')
   exportReport(@Query() query: any, @Res() res: Response) {
     return this.adminService.exportReport(query, res);
   }
 
-  @Get("meta")
+  @Get('meta')
   getMeta() {
     return this.adminService.getMeta();
   }
 
-  @Post("students")
+  @Post('students')
   createStudent(@Body() body: any) {
     return this.adminService.createStudent(body);
   }
 
-  @Post("students/bulk")
+  @Post('students/bulk')
   bulkCreateStudents(@Body() body: any) {
     return this.adminService.bulkCreateStudents(body);
   }
 
-  @Put("students/bulk")
+  @Put('students/bulk')
   bulkUpdateStudents(@Body() body: any) {
     return this.adminService.bulkUpdateStudents(body);
   }
 
-  @Delete("students/:id")
-  deleteStudent(@Param("id") id: string) {
+  @Delete('students/:id')
+  deleteStudent(@Param('id') id: string) {
     return this.adminService.deleteStudent(id);
   }
 }

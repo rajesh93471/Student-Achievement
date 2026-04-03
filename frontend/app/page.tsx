@@ -103,7 +103,18 @@ export default function HomePage() {
           </ul>
           <div className="flex items-center gap-3">
             <Link href="/signin" className="hidden sm:inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-surface-300 rounded-lg hover:bg-surface-50 hover:text-ink transition-colors">Sign in</Link>
-            <Link href="/signup" className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 rounded-lg shadow-sm hover:bg-brand-700 hover:shadow-md transition-all hover:-translate-y-0.5">Get started &rarr;</Link>
+            <Link 
+              href="/signin" 
+              className="sm:hidden inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 rounded-lg shadow-sm hover:bg-brand-700 transition-all active:scale-95"
+            >
+              Sign in
+            </Link>
+            <Link 
+              href="/signup" 
+              className="hidden sm:inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 rounded-lg shadow-sm hover:bg-brand-700 hover:shadow-md transition-all hover:-translate-y-0.5"
+            >
+              Get started &rarr;
+            </Link>
           </div>
         </div>
       </nav>

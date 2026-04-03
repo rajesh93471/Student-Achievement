@@ -1,7 +1,7 @@
-import dotenv from "dotenv";
-import { PrismaClient } from "@prisma/client";
-import sampleStudents from "./sampleStudents.json";
-import * as bcrypt from "bcryptjs";
+import dotenv from 'dotenv';
+import { PrismaClient } from '@prisma/client';
+import sampleStudents from './sampleStudents.json';
+import * as bcrypt from 'bcryptjs';
 
 dotenv.config();
 
@@ -19,37 +19,37 @@ const seed = async () => {
 
   await prisma.department.createMany({
     data: [
-      { name: "Computer Science", code: "CSE", hodName: "Dr. Kavita Rao" },
-      { name: "Electronics", code: "ECE", hodName: "Dr. Arun Bhat" },
-      { name: "Management", code: "MBA", hodName: "Dr. Neha Kapoor" },
+      { name: 'Computer Science', code: 'CSE', hodName: 'Dr. Kavita Rao' },
+      { name: 'Electronics', code: 'ECE', hodName: 'Dr. Arun Bhat' },
+      { name: 'Management', code: 'MBA', hodName: 'Dr. Neha Kapoor' },
     ],
   });
 
   const admin = await prisma.user.create({
     data: {
-      name: "System Admin",
-      email: "admin@stuach.edu",
-      password: await bcrypt.hash("Admin@123", 10),
-      role: "admin",
-      department: "Administration",
+      name: 'System Admin',
+      email: 'admin@stuach.edu',
+      password: await bcrypt.hash('Admin@123', 10),
+      role: 'admin',
+      department: 'Administration',
     },
   });
 
   const faculty = await prisma.user.create({
     data: {
-      name: "Prof. Meera Iyer",
-      email: "faculty@stuach.edu",
-      password: await bcrypt.hash("Faculty@123", 10),
-      role: "faculty",
-      department: "Computer Science",
+      name: 'Prof. Meera Iyer',
+      email: 'faculty@stuach.edu',
+      password: await bcrypt.hash('Faculty@123', 10),
+      role: 'faculty',
+      department: 'Computer Science',
     },
   });
 
   await prisma.facultyProfile.create({
     data: {
       userId: faculty.id,
-      department: "Computer Science",
-      designation: "Associate Professor",
+      department: 'Computer Science',
+      designation: 'Associate Professor',
     },
   });
 
@@ -58,8 +58,8 @@ const seed = async () => {
       data: {
         name: item.name,
         email: item.email,
-        password: await bcrypt.hash("Student@123", 10),
-        role: "student",
+        password: await bcrypt.hash('Student@123', 10),
+        role: 'student',
         department: item.department,
       },
     });
@@ -93,10 +93,10 @@ const seed = async () => {
     }
   }
 
-  console.log("Seed completed", {
+  console.log('Seed completed', {
     admin: admin.email,
     faculty: faculty.email,
-    studentPassword: "Student@123",
+    studentPassword: 'Student@123',
   });
 };
 

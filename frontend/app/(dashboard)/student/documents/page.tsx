@@ -12,21 +12,31 @@ import { FileText, Image as ImageIcon, Trash2, Eye, UploadCloud, FileCheck } fro
 
 /* ─── Document type → accent color ──────────────────────────────────────── */
 const TYPE_STYLES: Record<string, string> = {
-  marksheet:          "bg-amber-100 text-amber-700 border-amber-200",
-  aadhaar:            "bg-blue-100 text-blue-700 border-blue-200",
-  pan:                "bg-emerald-100 text-emerald-700 border-emerald-200",
-  "voter-id":         "bg-purple-100 text-purple-700 border-purple-200",
-  "apaar-abc-id":     "bg-cyan-100 text-cyan-700 border-cyan-200",
-  certificate:        "bg-rose-100 text-rose-700 border-rose-200",
-  "internship-letter":"bg-orange-100 text-orange-700 border-orange-200",
-  publication:        "bg-teal-100 text-teal-700 border-teal-200",
-  award:              "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
-  other:              "bg-slate-100 text-slate-700 border-slate-200",
+  marksheet:          "bg-amber-50 text-amber-600 border-amber-200",
+  aadhaar:            "bg-blue-50 text-blue-600 border-blue-200",
+  pan:                "bg-emerald-50 text-emerald-600 border-emerald-200",
+  "voter-id":         "bg-purple-50 text-purple-600 border-purple-200",
+  "apaar-abc-id":     "bg-cyan-50 text-cyan-600 border-cyan-200",
+  certificate:        "bg-rose-50 text-rose-600 border-rose-200",
+  "internship-letter":"bg-orange-50 text-orange-600 border-orange-200",
+  publication:        "bg-teal-50 text-teal-600 border-teal-200",
+  award:              "bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200",
+  passport:           "bg-sky-50 text-sky-600 border-sky-200",
+  resume:             "bg-violet-50 text-violet-600 border-violet-200",
+  "admit-card":       "bg-pink-50 text-pink-600 border-pink-200",
+  "fee-receipt":      "bg-lime-50 text-lime-600 border-lime-200",
+  "bonafide-certificate": "bg-indigo-50 text-indigo-600 border-indigo-200",
+  "transfer-certificate": "bg-gray-50 text-gray-600 border-gray-200",
+  "community-certificate": "bg-yellow-50 text-yellow-600 border-yellow-200",
+  "income-certificate": "bg-red-50 text-red-600 border-red-200",
+  other:              "bg-slate-50 text-slate-600 border-slate-200",
 };
 
 const DOC_TYPES = [
-  "marksheet","aadhaar","pan","voter-id","apaar-abc-id",
-  "certificate","internship-letter","publication","award","other",
+  "marksheet", "aadhaar", "pan", "voter-id", "apaar-abc-id", 
+  "passport", "resume", "admit-card", "fee-receipt", 
+  "bonafide-certificate", "transfer-certificate", "community-certificate", "income-certificate",
+  "certificate", "internship-letter", "publication", "award", "other",
 ];
 
 /* ─── File type icon ─────────────────────────────────────────────────────── */
