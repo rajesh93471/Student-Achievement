@@ -13,7 +13,7 @@ export class ChatbotService {
         totalStudents,
         totalAchievements,
         totalDocuments,
-        totalParents,
+
         unreadNotifications,
         departmentStats,
         categoryStats,
@@ -23,7 +23,7 @@ export class ChatbotService {
         this.prisma.student.count(),
         this.prisma.achievement.count(),
         this.prisma.document.count(),
-        this.prisma.user.count({ where: { role: 'parent' } }),
+
         this.prisma.notification.count({ where: { status: 'unread' } }),
         this.prisma.student.groupBy({
           by: ['department'],
@@ -54,7 +54,7 @@ export class ChatbotService {
           students: totalStudents,
           achievements: totalAchievements,
           documents: totalDocuments,
-          parents: totalParents,
+
         },
         notifications: { unread: unreadNotifications },
         departmentBreakdown: departmentStats.map((row) => ({
@@ -90,15 +90,6 @@ export class ChatbotService {
       student = await this.prisma.student.findUnique({
         where: { userId: user.id },
       });
-    } else if (user.role === 'parent') {
-      const parentProfile = await this.prisma.parentProfile.findUnique({
-        where: { userId: user.id },
-      });
-      if (parentProfile?.studentDbId) {
-        student = await this.prisma.student.findUnique({
-          where: { id: parentProfile.studentDbId },
-        });
-      }
     }
 
     if (!student) {

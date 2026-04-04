@@ -56,6 +56,11 @@ export class StudentsService {
         : body.address === null
           ? ''
           : undefined;
+    const nextYear = body.year !== undefined ? Number(body.year) : undefined;
+    const nextSemester =
+      body.semester !== undefined ? Number(body.semester) : undefined;
+    const nextPhone =
+      typeof body.phone === 'string' ? body.phone.trim() : undefined;
 
     if (nextEmail) {
       const existingUser = await this.prisma.user.findFirst({
@@ -84,6 +89,9 @@ export class StudentsService {
           ...(nextAddress !== undefined
             ? { address: nextAddress || null }
             : {}),
+          ...(nextYear !== undefined ? { year: nextYear } : {}),
+          ...(nextSemester !== undefined ? { semester: nextSemester } : {}),
+          ...(nextPhone !== undefined ? { phone: nextPhone || null } : {}),
         },
       });
     });

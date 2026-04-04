@@ -1,4 +1,4 @@
-export type Role = "student" | "admin" | "faculty" | "parent";
+export type Role = "student" | "admin" | "faculty";
 
 export interface AuthUser {
   id: string;
@@ -7,11 +7,11 @@ export interface AuthUser {
   role: Role;
   department?: string;
   studentId?: string;
-  linkedStudentId?: string;
 }
 
 export interface StudentProfile {
-  _id: string;
+  id: string;
+  userId: string;
   studentId: string;
   fullName: string;
   department: string;
@@ -25,33 +25,39 @@ export interface StudentProfile {
   address?: string;
   profilePhotoUrl?: string;
   cgpa?: number;
-  subjectsCompleted: string[];
+  subjectsCompleted?: any;
   backlogs: number;
   achievementsCount: number;
   documentsCount: number;
 }
 
 export interface Achievement {
-  _id: string;
+  id: string;
+  studentId: string;
   title: string;
   description: string;
   date: string;
-  category: string;
   academicYear?: string;
   semester?: number;
+  category: string;
   activityType?: string;
-  status: "pending" | "approved" | "rejected";
-  feedback?: string;
+  organizedBy?: string;
+  position?: string;
   certificateUrl?: string;
-  recommendedForAward?: boolean;
+  status: "pending" | "approved" | "rejected";
+  verifiedById?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DocumentItem {
-  _id: string;
+  id: string;
+  studentId: string;
   title: string;
   type: string;
   fileUrl: string;
   mimeType?: string;
-  size: number;
+  size?: number;
   createdAt?: string;
+  updatedAt?: string;
 }

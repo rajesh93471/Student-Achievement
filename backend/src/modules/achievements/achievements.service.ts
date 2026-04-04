@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { createDownloadUrl } from '../../utils/s3';
+import { createDownloadUrl } from '../../utils/storage';
 
 @Injectable()
 export class AchievementsService {

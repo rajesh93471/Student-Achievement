@@ -40,19 +40,38 @@ export async function uploadStudentFile({
     uploadUrl: string;
     fileUrl: string;
     mock?: boolean;
+    mode?: string;
   };
 
   if (!payload.mock) {
-    const uploadResponse = await fetch(payload.uploadUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type,
-      },
-      body: file,
-    });
+    if (payload.mode === "local") {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("key", payload.key);
 
-    if (!uploadResponse.ok) {
-      throw new Error("File upload failed");
+      const uploadResponse = await fetch(payload.uploadUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("File upload failed");
+      }
+    } else {
+      const uploadResponse = await fetch(payload.uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+        },
+        body: file,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("File upload failed");
+      }
     }
   }
 

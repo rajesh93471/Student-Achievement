@@ -11,6 +11,7 @@ import { useAuth } from "@/components/layout/providers";
 import { AuthUser, Role } from "@/lib/types";
 import { Modal } from "@/components/ui/modal";
 
+
 type LoginValues = {
   identifier: string;
   password: string;
@@ -20,7 +21,6 @@ type LoginValues = {
 const ROLES: { value: Role; label: string; icon: string }[] = [
   { value: "student", label: "Student",  icon: "ST" },
   { value: "admin",   label: "Admin",    icon: "AD" },
-  { value: "parent",  label: "Parent",   icon: "PA" },
 ];
 
 export function SignInForm() {
@@ -55,8 +55,7 @@ export function SignInForm() {
       const actualRole  = response.user.role;
       const roleToUse   = values.role === actualRole ? values.role : actualRole;
       router.push(
-        roleToUse === "admin"  ? "/admin"  :
-        roleToUse === "parent" ? "/parent" : "/student"
+        roleToUse === "admin"  ? "/admin"  : "/student"
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");
@@ -299,7 +298,7 @@ export function SignInForm() {
             margin: 0, lineHeight: 1.7,
             letterSpacing: "0.02em",
           }}>
-            Students, admins, and parents can access their role-specific workspace here.
+            Students and admins can access their role-specific workspace here.
           </p>
         </div>
 
@@ -462,8 +461,6 @@ export function SignInForm() {
             New here?
           </span>
           <Link href="/signup" className="si-link-amber">Student sign up</Link>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "#94a3b8" }}>or</span>
-          <Link href="/parent-signup" className="si-link-amber">Parent sign up</Link>
         </div>
       </div>
 

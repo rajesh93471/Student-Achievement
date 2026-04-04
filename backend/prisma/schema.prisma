@@ -17,7 +17,6 @@ model User {
   settings       Json?
   isActive       Boolean          @default(true)
   student        Student?
-  parentProfile  ParentProfile?
   facultyProfile FacultyProfile?
   passwordResetOtps PasswordResetOtp[]
   achievementsVerified Achievement[] @relation("AchievementVerifiedBy")
@@ -49,22 +48,8 @@ model Student {
   documentsCount    Int           @default(0)
   achievements      Achievement[]
   documents         Document[]
-  parents           ParentProfile[]
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
-}
-
-model ParentProfile {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  studentDbId String
-  student   Student  @relation(fields: [studentDbId], references: [id], onDelete: Cascade)
-  studentId String
-  relation  String
-  phone     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model FacultyProfile {

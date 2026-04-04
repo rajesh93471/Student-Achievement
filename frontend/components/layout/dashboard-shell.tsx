@@ -79,8 +79,7 @@ export function DashboardShell({
   const unreadCount = notifications.filter((n: any) => n.status === "unread").length;
 
   const profilePath =
-    user?.role === "admin"  ? "/admin/students" :
-    user?.role === "parent" ? "/parent"         : "/student/profile";
+    user?.role === "admin"  ? "/admin/students" : "/student/profile";
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {

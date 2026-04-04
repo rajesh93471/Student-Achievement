@@ -5,7 +5,7 @@ export class LoginDto {
   identifier: string;
 
   @IsString()
-  @IsIn(['student', 'admin', 'parent', 'faculty'])
+  @IsIn(['student', 'admin', 'faculty'])
   role: string;
 
   @IsString()

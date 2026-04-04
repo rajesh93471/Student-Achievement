@@ -1,34 +1,49 @@
 # Student Achievement and Profile Management System
 
-A full-stack university portal for managing student profiles, achievements, documents, notifications, and role-based dashboards for students, parents, faculty, and admins.
+A full-stack university portal for managing student profiles, achievements, documents, and notifications.
 
 ## Stack
 
-- Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS, React Query, Recharts
+- Frontend: Next.js 15 (Static Export via Nginx), React 19, TypeScript, Tailwind CSS
 - Backend: NestJS 11, Prisma, JWT authentication
 - Database: MySQL
-- Storage: AWS S3
+- Storage: Local File Storage (Local `uploads/` folder) 
 
-## Current architecture
+## Features
 
-- `frontend/`: Next.js application with auth flows and dashboard pages
-- `backend/`: NestJS API with Prisma schema, migrations, and role-based modules
-- `docs/`: API, architecture, database, and deployment notes
+- **Route Prefix**: All system components are served under the `/achieve` path.
+- **Roles**: 
+  - **Student**: Manage profile, view academic status, upload achievements.
+  - **Faculty**: View student achievements in their department.
+  - **Admin**: Full system control.
 
-## Backend modules
+## Running with Docker (Recommended)
 
-- `auth`
-- `students`
-- `parents`
-- `faculty`
-- `admin`
-- `achievements`
-- `documents`
-- `notifications`
-- `users`
-- `chatbot`
+The system is fully containerized and easy to run using Docker Compose.
 
-## Quick start
+### Prerequisites
+
+- Docker and Docker Compose installed.
+- A `.env` file in the root directory (copy from `.env.example`).
+
+### Start the system
+
+1.  **Prepare environment**:
+    ```bash
+    cp .env.example .env
+    ```
+    (Edit `.env` as needed)
+
+2.  **Launch the stack**:
+    ```bash
+    docker-compose up --build
+    ```
+
+The system will be available at:
+- **Frontend**: [http://localhost:3000/achieve](http://localhost:3000/achieve)
+- **Backend API**: [http://localhost:5001/achieve](http://localhost:5001/achieve)
+
+## Manual Development
 
 ### 1. Backend
 
@@ -41,8 +56,6 @@ npx prisma migrate dev
 npm run start:dev
 ```
 
-The API runs on `http://localhost:5001` by default.
-
 ### 2. Frontend
 
 ```bash
@@ -52,62 +65,14 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The frontend runs on `http://localhost:3000`.
-
-## Environment variables
-
-### Backend
-
-See [`backend/.env.example`](D:/Achivements/StuAch/backend/.env.example) for the full list. The main values you need are:
-
-- `DATABASE_URL`
-- `JWT_SECRET`
-- `CLIENT_URL`
-- `AWS_REGION`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_S3_BUCKET`
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_USER`
-- `SMTP_PASS`
-
-### Frontend
-
-See [`frontend/.env.example`](D:/Achivements/StuAch/frontend/.env.example).
-
-- `NEXT_PUBLIC_API_URL`
-
 ## Useful scripts
 
-### Backend
-
-```bash
-npm run start:dev
-npm run build
-npm run start:prod
-npm run test
-npm run lint
-npm run prisma:generate
-npm run prisma:migrate
-```
-
-### Frontend
-
-```bash
-npm run dev
-npm run build
-npm run start
-```
+- **Build Docker images**: `docker-compose build`
+- **Stop system**: `docker-compose down`
+- **View logs**: `docker-compose logs -f`
 
 ## Documentation
 
-- API reference: [`docs/API.md`](D:/Achivements/StuAch/docs/API.md)
-- Database schema: [`docs/DATABASE_SCHEMA.md`](D:/Achivements/StuAch/docs/DATABASE_SCHEMA.md)
-- Deployment guide: [`docs/DEPLOYMENT.md`](D:/Achivements/StuAch/docs/DEPLOYMENT.md)
-- Architecture notes: [`docs/ARCHITECTURE.md`](D:/Achivements/StuAch/docs/ARCHITECTURE.md)
-
-## Notes
-
-- The legacy `backend_old` folder has been removed.
-- The active backend is the NestJS app inside [`backend/`](D:/Achivements/StuAch/backend).
+- API reference: [`docs/API.md`](./docs/API.md)
+- Database schema: [`docs/DATABASE_SCHEMA.md`](./docs/DATABASE_SCHEMA.md)
+- Deployment guide: [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md)

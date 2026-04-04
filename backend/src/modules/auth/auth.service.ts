@@ -11,7 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { randomBytes, randomInt, createHash } from 'crypto';
 import * as nodemailer from 'nodemailer';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { LoginDto, RegisterParentDto, RegisterStudentDto } from './dto';
+import { LoginDto, RegisterStudentDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -174,50 +174,6 @@ export class AuthService {
     };
   }
 
-  async registerParent(payload: RegisterParentDto) {
-    payload.studentId = payload.studentId.trim().toUpperCase();
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: payload.email },
-    });
-    if (existingUser) throw new ConflictException('Email already exists');
-
-    const student = await this.prisma.student.findUnique({
-      where: { studentId: payload.studentId },
-    });
-    if (!student) throw new NotFoundException('Registration number not found');
-
-    const hashed = await bcrypt.hash(payload.password, 10);
-    const user = await this.prisma.user.create({
-      data: {
-        name: payload.name,
-        email: payload.email,
-        password: hashed,
-        role: 'parent',
-      },
-    });
-
-    await this.prisma.parentProfile.create({
-      data: {
-        userId: user.id,
-        studentDbId: student.id,
-        studentId: student.studentId,
-        relation: payload.relation,
-        phone: payload.phone,
-      },
-    });
-
-    return {
-      token: await this.signToken(String(user.id), user.role),
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        linkedStudentId: student.studentId,
-      },
-    };
-  }
-
   async login(payload: LoginDto) {
     const normalizedIdentifier = String(payload.identifier || '').trim();
     let user: Awaited<ReturnType<typeof this.prisma.user.findUnique>> = null;
@@ -245,12 +201,6 @@ export class AuthService {
       user.role === 'student'
         ? await this.prisma.student.findUnique({ where: { userId: user.id } })
         : null;
-    const parent =
-      user.role === 'parent'
-        ? await this.prisma.parentProfile.findUnique({
-            where: { userId: user.id },
-          })
-        : null;
 
     return {
       token: await this.signToken(String(user.id), user.role),
@@ -261,7 +211,6 @@ export class AuthService {
         role: user.role,
         department: user.department,
         studentId: student?.studentId,
-        linkedStudentId: parent?.studentId,
       },
     };
   }
@@ -271,12 +220,6 @@ export class AuthService {
       user.role === 'student'
         ? await this.prisma.student.findUnique({ where: { userId: user.id } })
         : null;
-    const parent =
-      user.role === 'parent'
-        ? await this.prisma.parentProfile.findUnique({
-            where: { userId: user.id },
-          })
-        : null;
     return {
       user: {
         id: user.id,
@@ -285,7 +228,6 @@ export class AuthService {
         role: user.role,
         department: user.department,
         studentId: student?.studentId,
-        linkedStudentId: parent?.studentId,
       },
     };
   }

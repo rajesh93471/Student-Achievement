@@ -11,7 +11,6 @@ const seed = async () => {
   await prisma.notification.deleteMany();
   await prisma.document.deleteMany();
   await prisma.achievement.deleteMany();
-  await prisma.parentProfile.deleteMany();
   await prisma.facultyProfile.deleteMany();
   await prisma.student.deleteMany();
   await prisma.department.deleteMany();
@@ -27,9 +26,9 @@ const seed = async () => {
 
   const admin = await prisma.user.create({
     data: {
-      name: 'System Admin',
-      email: 'admin@stuach.edu',
-      password: await bcrypt.hash('Admin@123', 10),
+      name: 'Vijay',
+      email: 'vijay@gmail.com',
+      password: await bcrypt.hash('vijay@123', 10),
       role: 'admin',
       department: 'Administration',
     },

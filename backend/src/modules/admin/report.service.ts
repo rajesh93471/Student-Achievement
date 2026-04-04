@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 import archiver from 'archiver';
-import { createDownloadUrl } from '../../utils/s3';
+import { createDownloadUrl } from '../../utils/storage';
 
 export const generateAchievementsZip = async (achievements: any[]) => {
   const archive = archiver('zip', { zlib: { level: 9 } });

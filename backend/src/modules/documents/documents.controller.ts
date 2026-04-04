@@ -6,8 +6,11 @@ import {
   Param,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { DocumentsService } from './documents.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -17,6 +20,13 @@ import { Roles } from '../../common/decorators/roles.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
+
+  @Post('upload')
+  @Roles('student')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@Req() req: any, @UploadedFile() file: Express.Multer.File, @Body('key') key: string) {
+    return this.documentsService.handleLocalUpload(req.user, file, key);
+  }
 
   @Post('upload-url')
   @Roles('student')
@@ -37,7 +47,7 @@ export class DocumentsController {
   }
 
   @Get(':id/download-url')
-  @Roles('student', 'admin', 'parent')
+  @Roles('student', 'admin')
   download(@Req() req: any, @Param('id') id: string) {
     return this.documentsService.getDocumentDownloadUrl(req.user, id);
   }

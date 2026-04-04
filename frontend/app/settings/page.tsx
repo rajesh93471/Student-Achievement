@@ -37,7 +37,7 @@ export default function SettingsPage() {
       title="Settings"
       subtitle="Manage your profile metadata and account security."
       nav={[
-        { label: "Dashboard", href: user?.role === "admin" ? "/admin" : user?.role === "parent" ? "/parent" : "/student" },
+        { label: "Dashboard", href: user?.role === "admin" ? "/admin" : "/student" },
       ]}
     >
       <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 items-start">

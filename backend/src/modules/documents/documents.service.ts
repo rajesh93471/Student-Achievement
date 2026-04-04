@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { createDownloadUrl, createUploadUrl } from '../../utils/s3';
+import { createDownloadUrl, createUploadUrl, saveLocalFile } from '../../utils/storage';
 
 const allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
 
@@ -96,19 +96,14 @@ export class DocumentsService {
       throw new ForbiddenException('Forbidden');
     }
 
-    if (user.role === 'parent') {
-      const parent = await this.prisma.parentProfile.findUnique({
-        where: { userId: user.id },
-      });
-      if (
-        !parent ||
-        String(parent.studentDbId) !== String(document.studentId)
-      ) {
-        throw new ForbiddenException('Forbidden');
-      }
-    }
 
     const payload = await createDownloadUrl({ key: document.fileKey });
     return { downloadUrl: payload.downloadUrl, mock: payload.mock };
+  }
+
+  async handleLocalUpload(user: any, file: Express.Multer.File, key: string) {
+    if (!file) throw new BadRequestException('No file provided');
+    saveLocalFile(file, key);
+    return { message: 'File uploaded successfully', key };
   }
 }

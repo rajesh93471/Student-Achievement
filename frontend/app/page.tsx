@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { UniversityWordmark } from "@/components/layout/university-wordmark";
 
 const stats = [
-  { value: "3 Roles", label: "Student, Admin, Parent", sub: "role-based access and dashboards" },
+  { value: "2 Roles", label: "Student, Admin", sub: "role-based access and dashboards" },
   { value: "1 Portal", label: "Profiles and Documents", sub: "single source of student records" },
   { value: "Track", label: "Achievements & Approvals", sub: "structured evidence by year and type" },
   { value: "Export", label: "Reports and Analytics", sub: "accreditation-ready summaries" },
@@ -54,7 +54,7 @@ const workflows = [
     step: "03",
     accent: "bg-emerald-500",
     title: "Review, Approve, and Report",
-    body: "Admins review submissions, parents track progress, and the institution generates reports for analysis and accreditation.",
+    body: "Admins review submissions, verify student records, and the institution generates reports for analysis and accreditation.",
   },
 ];
 
@@ -65,7 +65,7 @@ const students = [
 ];
 
 const heroBenefits = [
-  { title: "Role-Based Access", body: "Separate student, admin, and parent views with focused actions." },
+  { title: "Role-Based Access", body: "Separate student and admin views with focused actions." },
   { title: "Document Verification", body: "Collect, review, and maintain proofs in one structured portal." },
   { title: "Reports and Analytics", body: "Track approvals, achievements, and institutional summaries quickly." },
 ];

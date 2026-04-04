@@ -84,8 +84,12 @@ export default function StudentProfilePage() {
   const [contactMessage, setContactMessage] = useState("");
   const [contactStatus, setContactStatus] = useState<string>("");
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAcademicEditOpen, setIsAcademicEditOpen] = useState(false); // New modal for Year/Semester
   const [editableEmail, setEditableEmail] = useState("");
   const [editableAddress, setEditableAddress] = useState("");
+  const [editablePhone, setEditablePhone] = useState(""); // Shared phone state
+  const [editableYear, setEditableYear] = useState<number>(1);
+  const [editableSemester, setEditableSemester] = useState<number>(1);
   const [editStatus, setEditStatus] = useState("");
 
   const { data } = useQuery({
@@ -100,6 +104,9 @@ export default function StudentProfilePage() {
     if (!student) return;
     setEditableEmail(student.email || "");
     setEditableAddress(student.address || "");
+    setEditablePhone(student.phone || "");
+    setEditableYear(student.year || 1);
+    setEditableSemester(student.semester || 1);
   }, [student]);
 
   const contactMutation = useMutation({
@@ -119,7 +126,7 @@ export default function StudentProfilePage() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: (payload: { email: string; address: string }) =>
+    mutationFn: (payload: Partial<StudentProfile>) =>
       api<{ student: StudentProfile }>("/students/me", {
         method: "PUT",
         token,
@@ -128,7 +135,10 @@ export default function StudentProfilePage() {
     onSuccess: async () => {
       setEditStatus("Profile updated.");
       await queryClient.invalidateQueries({ queryKey: ["student-profile"] });
-      setTimeout(() => setIsEditOpen(false), 1500);
+      setTimeout(() => {
+        setIsEditOpen(false);
+        setIsAcademicEditOpen(false);
+      }, 1500);
     },
     onError: (error) => {
       setEditStatus(error instanceof Error ? error.message : "Update failed.");
@@ -173,11 +183,26 @@ export default function StudentProfilePage() {
                       setEditStatus("");
                       setEditableEmail(student.email || "");
                       setEditableAddress(student.address || "");
+                      setEditablePhone(student.phone || "");
                       setIsEditOpen(true);
                     }}
                   >
                     <Edit3 size={14} />
                     Edit contact
+                  </button>
+                ) : section.heading === "Academic" ? (
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl text-[10px] font-semibold hover:bg-emerald-600 hover:text-white transition-all shadow-sm uppercase tracking-widest"
+                    onClick={() => {
+                      setEditStatus("");
+                      setEditableYear(student.year || 1);
+                      setEditableSemester(student.semester || 1);
+                      setIsAcademicEditOpen(true);
+                    }}
+                  >
+                    <Edit3 size={14} />
+                    Edit Academic
                   </button>
                 ) : null}
               </div>
@@ -222,15 +247,15 @@ export default function StudentProfilePage() {
               </div>
             </div>
 
-            {/* Info */}
+             {/* Info */}
             <div className="bg-brand-50 border border-brand-100 rounded-[32px] p-5 sm:p-6 shadow-sm flex items-start gap-4">
                <div className="w-10 h-10 rounded-xl bg-white border border-brand-200 flex items-center justify-center shrink-0 shadow-sm text-brand-600">
-                 <Info size={18} />
+                 <span className="text-brand-600 font-bold text-lg">!</span>
                </div>
                <div>
                   <h3 className="font-display font-semibold text-base text-brand-900 mb-1">Academic Updates</h3>
                   <p className="text-[11px] text-brand-700 font-semibold uppercase tracking-tight leading-relaxed">
-                    Personal details (Email & Address) can be managed directly. For department, CGPA, or graduation year corrections, please submit a request to the academic cell.
+                    Personal details (Email, Address & Phone) and Academic status (Year & Semester) can be managed directly. For department, graduation year or CGPA corrections, please contact administration.
                   </p>
                </div>
             </div>
@@ -287,6 +312,7 @@ export default function StudentProfilePage() {
             updateProfileMutation.mutate({
               email: editableEmail.trim(),
               address: editableAddress.trim(),
+              phone: editablePhone.trim(),
             });
           }}
         >
@@ -298,6 +324,16 @@ export default function StudentProfilePage() {
               value={editableEmail}
               onChange={(event) => setEditableEmail(event.target.value)}
               required
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone Number</label>
+            <input
+              className="w-full rounded-2xl border border-surface-200 bg-surface-50 px-4 py-3 text-sm text-ink font-sans focus:border-brand-500 focus:ring-4 focus:ring-brand-100 transition-all outline-none"
+              type="tel"
+              value={editablePhone}
+              onChange={(event) => setEditablePhone(event.target.value)}
+              placeholder="e.g. 9876543210"
             />
           </div>
           <div>
@@ -320,6 +356,58 @@ export default function StudentProfilePage() {
               {updateProfileMutation.isPending ? "SAVING..." : "SAVE CHANGES"}
             </button>
             <button className="flex-1 bg-white border border-surface-200 text-slate-500 font-bold py-3 rounded-xl text-[10px] uppercase tracking-widest hover:bg-surface-50 transition-all" type="button" onClick={() => setIsEditOpen(false)}>
+              CANCEL
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal open={isAcademicEditOpen} onClose={() => setIsAcademicEditOpen(false)} title="Edit Academic Status">
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setEditStatus("");
+            updateProfileMutation.mutate({
+              year: editableYear,
+              semester: editableSemester,
+            });
+          }}
+        >
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Current Year</label>
+            <select
+              className="w-full rounded-2xl border border-surface-200 bg-surface-50 px-4 py-3 text-sm text-ink font-sans focus:border-brand-500 focus:ring-4 focus:ring-brand-100 transition-all outline-none appearance-none"
+              value={editableYear}
+              onChange={(event) => setEditableYear(Number(event.target.value))}
+            >
+              {[1, 2, 3, 4].map((y) => (
+                <option key={y} value={y}>Year {y}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Current Semester</label>
+            <select
+              className="w-full rounded-2xl border border-surface-200 bg-surface-50 px-4 py-3 text-sm text-ink font-sans focus:border-brand-500 focus:ring-4 focus:ring-brand-100 transition-all outline-none appearance-none"
+              value={editableSemester}
+              onChange={(event) => setEditableSemester(Number(event.target.value))}
+            >
+              {[1, 2].map((s) => (
+                <option key={s} value={s}>Semester {s}</option>
+              ))}
+            </select>
+          </div>
+          {editStatus && (
+            <div className="p-3 bg-brand-50 border border-brand-100 rounded-xl text-[10px] font-bold text-brand-700 uppercase tracking-widest">
+              {editStatus}
+            </div>
+          )}
+          <div className="flex gap-3">
+            <button className="flex-1 bg-brand-600 text-white font-bold py-3 rounded-xl text-[10px] uppercase tracking-widest hover:bg-brand-700 transition-all shadow-md" type="submit" disabled={updateProfileMutation.isPending}>
+              {updateProfileMutation.isPending ? "SAVING..." : "SAVE CHANGES"}
+            </button>
+            <button className="flex-1 bg-white border border-surface-200 text-slate-500 font-bold py-3 rounded-xl text-[10px] uppercase tracking-widest hover:bg-surface-50 transition-all" type="button" onClick={() => setIsAcademicEditOpen(false)}>
               CANCEL
             </button>
           </div>
