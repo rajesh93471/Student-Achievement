@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { uploadStudentFile } from "@/lib/uploads";
 import { Select } from "@/components/ui/select";
@@ -13,6 +13,7 @@ export interface AchievementFormValues {
   date?: string;
   academicYear?: string;
   semester?: number;
+  activityType?: string;
   organizedBy?: string;
   position?: string;
 }
@@ -105,11 +106,17 @@ export function AchievementForm({
   token,
   defaultAcademicYear,
   defaultSemester,
+  initialValues,
+  requireCertificate = true,
+  submitLabel = "Save achievement",
 }: {
   onSubmit: (values: AchievementFormValues) => Promise<unknown>;
   token: string | null;
   defaultAcademicYear?: string;
   defaultSemester?: number;
+  initialValues?: Partial<AchievementFormValues> & { certificateUrl?: string; certificateKey?: string };
+  requireCertificate?: boolean;
+  submitLabel?: string;
 }) {
   const safeDefaultAchievementDate = DEFAULT_ACHIEVEMENT_DATE || "";
   const [uploadMessage, setUploadMessage] = useState<string>("");
@@ -118,19 +125,36 @@ export function AchievementForm({
   const [selectedStream, setSelectedStream] = useState<AchievementStream>("technical");
   const [step, setStep] = useState<1 | 2>(1);
   const [submitError, setSubmitError] = useState<string>("");
-  const buildFormDefaults = (stream: AchievementStream, dateValue = safeDefaultAchievementDate) => ({
-    title: "",
-    description: "",
-    category: CATEGORY_OPTIONS[stream][0].value,
-    date: dateValue,
-    academicYear: defaultAcademicYear,
-    semester: defaultSemester,
-    organizedBy: ORGANIZED_BY_OPTIONS[0],
-    position: POSITION_OPTIONS[0],
+  const inferStream = (category?: string): AchievementStream =>
+    CATEGORY_OPTIONS.technical.some((option) => option.value === category)
+      ? "technical"
+      : "non-technical";
+  const buildFormDefaults = (
+    stream: AchievementStream,
+    dateValue = safeDefaultAchievementDate,
+    values?: Partial<AchievementFormValues>,
+  ) => ({
+    title: values?.title ?? "",
+    description: values?.description ?? "",
+    category: values?.category ?? CATEGORY_OPTIONS[stream][0].value,
+    date: values?.date ?? dateValue,
+    academicYear: values?.academicYear ?? defaultAcademicYear,
+    semester: values?.semester ?? defaultSemester,
+    activityType: values?.activityType ?? "",
+    organizedBy: values?.organizedBy ?? ORGANIZED_BY_OPTIONS[0],
+    position: values?.position ?? POSITION_OPTIONS[0],
   });
+  const normalizedInitialValues = useMemo(() => initialValues
+    ? {
+        ...initialValues,
+        date: initialValues.date ? String(initialValues.date).slice(0, 10) : safeDefaultAchievementDate,
+      }
+    : undefined, [initialValues, safeDefaultAchievementDate]);
+    
+  const initialStream = useMemo(() => inferStream(normalizedInitialValues?.category), [normalizedInitialValues]);
 
   const { register, handleSubmit, reset, watch, setValue } = useForm<AchievementFormValues>({
-    defaultValues: buildFormDefaults("technical"),
+    defaultValues: buildFormDefaults(initialStream, normalizedInitialValues?.date || safeDefaultAchievementDate, normalizedInitialValues),
   });
   const achievementDate = watch("date") || safeDefaultAchievementDate;
 
@@ -143,6 +167,18 @@ export function AchievementForm({
     }
   }, [defaultAcademicYear, defaultSemester, setValue]);
 
+  useEffect(() => {
+    if (!normalizedInitialValues) return;
+    setSelectedStream(initialStream);
+    reset(
+      buildFormDefaults(
+        initialStream,
+        normalizedInitialValues.date || safeDefaultAchievementDate,
+        normalizedInitialValues,
+      ),
+    );
+  }, [initialStream, normalizedInitialValues, reset, safeDefaultAchievementDate]);
+
   return (
     <form
       className="flex flex-col gap-6"
@@ -151,7 +187,7 @@ export function AchievementForm({
         try {
           const certInput = document.getElementById("achievement-certificate") as HTMLInputElement | null;
           const file = certInput?.files?.[0];
-          if (!file) {
+          if (!file && requireCertificate && !initialValues?.certificateKey) {
             setSubmitError("Please upload an achievement certificate before saving.");
             return;
           }
@@ -162,33 +198,29 @@ export function AchievementForm({
             date: achievementDate || safeDefaultAchievementDate,
             academicYear: values.academicYear || defaultAcademicYear,
             semester: values.semester ?? defaultSemester,
+            activityType: values.activityType?.trim() || "",
             organizedBy: values.organizedBy || ORGANIZED_BY_OPTIONS[0],
             position: values.position || POSITION_OPTIONS[0],
           };
-          let payload: AchievementFormValues & { certificateUrl?: string; certificateKey?: string } = payloadBase;
+          let payload: AchievementFormValues & { certificateUrl?: string; certificateKey?: string } = {
+            ...payloadBase,
+            certificateUrl: initialValues?.certificateUrl,
+            certificateKey: initialValues?.certificateKey,
+          };
 
           if (file && token) {
             setUploadMessage("Uploading certificate...");
             const uploaded = await uploadStudentFile({
               file,
               token,
-              apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api",
+              apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/achieve",
             });
             payload = { ...payloadBase, certificateUrl: uploaded.fileUrl, certificateKey: uploaded.fileKey };
             setUploadMessage("Uploaded certificate.");
           }
 
           await onSubmit(payload);
-          reset({
-            title: "",
-            description: "",
-            category: CATEGORY_OPTIONS.technical[0].value,
-            date: safeDefaultAchievementDate,
-            academicYear: defaultAcademicYear,
-            semester: defaultSemester,
-            organizedBy: ORGANIZED_BY_OPTIONS[0],
-            position: POSITION_OPTIONS[0],
-          });
+          reset(buildFormDefaults("technical"));
           setSelectedStream("technical");
           setStep(1);
           setUploadMessage("");
@@ -281,8 +313,7 @@ export function AchievementForm({
               <Label text="Academic year" />
               <Select
                 {...register("academicYear")}
-                disabled
-                title="Auto-filled from your profile"
+                title="Select the year this was achieved"
               >
                 {ACADEMIC_YEAR_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -293,8 +324,7 @@ export function AchievementForm({
               <Label text="Semester" />
               <Select
                 {...register("semester", { valueAsNumber: true })}
-                disabled
-                title="Auto-filled from your profile"
+                title="Select the semester this was achieved"
               >
                 <option value={1}>Semester 1</option>
                 <option value={2}>Semester 2</option>
@@ -348,9 +378,14 @@ export function AchievementForm({
                 {isDragging ? "Drop it here" : "Drag & drop or click to browse"}
               </p>
               <p className="font-sans text-sm text-slate-500">
-                PDF &bull; JPG &bull; PNG &bull; max 5 MB &bull; required
+                PDF &bull; JPG &bull; PNG &bull; max 5 MB &bull; {requireCertificate && !initialValues?.certificateKey ? "required" : "optional"}
               </p>
             </div>
+            {initialValues?.certificateKey && !selectedFileName && (
+              <p className="text-sm font-medium text-slate-500 mt-3">
+                Existing certificate will be kept unless you choose a new file.
+              </p>
+            )}
             {selectedFileName && (
               <p className="text-sm font-semibold text-brand-700 mt-3 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-brand-500"></span> {selectedFileName}
@@ -375,7 +410,7 @@ export function AchievementForm({
               type="submit"
               className="flex-1 bg-brand-600 text-white font-semibold py-3.5 px-6 rounded-xl hover:bg-brand-700 hover:-translate-y-0.5 hover:shadow-md transition-all"
             >
-              Save achievement
+              {submitLabel}
             </button>
           </div>
           {submitError && (

@@ -1,17 +1,29 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { AchievementForm } from "@/components/forms/achievement-form";
-import { Modal } from "@/components/ui/modal";
 import { useAuth } from "@/components/layout/providers";
 import { api } from "@/lib/api";
-import { cn } from "@/lib/utils";
-import { Plus, Filter, Calendar, Award, ExternalLink, Edit3, Trash2, ChevronDown } from "lucide-react";
-import { Select } from "@/components/ui/select";
+import { AchievementForm, AchievementFormValues } from "@/components/forms/achievement-form";
+import { Modal } from "@/components/ui/modal";
+import { 
+  Award, 
+  Plus, 
+  Search, 
+  Filter, 
+  Edit3, 
+  Trash2, 
+  ExternalLink,
+  ChevronRight,
+  Calendar,
+  Layers,
+  MoreVertical,
+  CheckCircle2
+} from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
-/* ─── Category accent map ────────────────────────────────────────────────── */
+/* ─── Category styles (consistent with dashboard) ────────────────────────── */
 const CATEGORY_STYLES: Record<string, string> = {
   academic:      "bg-amber-100 text-amber-700 border-amber-200",
   hackathon:     "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -26,307 +38,254 @@ const CATEGORY_STYLES: Record<string, string> = {
   research:      "bg-teal-100 text-teal-700 border-teal-200",
 };
 
-const ORGANIZED_BY_OPTIONS = ["University", "NO / Outside Campus"];
-const POSITION_OPTIONS = [
-  "Winner", "Runner", "1st Runner", "2nd Runner", "1st Prize", "2nd Prize", "3rd Prize",
-  "Participation", "Appreciation", "Round 1", "Round 2", "Round 3", "Finalist",
-  "Semi Finalist", "Quarter Finalist", "Top 10", "Top 5", "Merit", "Special Mention",
-  "Best Performer", "Consolation",
-];
-
-const CATEGORIES = [
-  "academic","hackathon","competition","olympiad","certification",
-  "internship","project","other-technical","sports","cultural","club","leadership",
-  "volunteering","social-service","nss","ncc","entrepreneurship",
-  "arts","literary","public-speaking","community","other-non-technical","research",
-];
-
-const inputClasses = "w-full bg-white border border-surface-300 rounded-xl px-4 py-3 text-ink font-sans text-sm outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-100";
-
-/* ─── Shared micro-component: labelled field ─────────────────────────────── */
-function Field({ label, value }: { label: string; value: string | number | undefined | null }) {
-  if (value === undefined || value === null || value === "") return null;
-  return (
-    <div>
-      <span className="block text-[8px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">{label}</span>
-      <span className="text-xs font-semibold text-ink leading-tight tracking-tight uppercase">{value}</span>
-    </div>
-  );
-}
-
 export default function StudentAchievementsPage() {
   const { token } = useAuth();
   const queryClient = useQueryClient();
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<string>("All");
-  const [editForm, setEditForm] = useState({
-    title: "",
-    description: "",
-    category: "hackathon",
-    date: "",
-    academicYear: "",
-    semester: "",
-    activityType: "",
-    organizedBy: ORGANIZED_BY_OPTIONS[0],
-    position: POSITION_OPTIONS[0],
-  });
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingAchievement, setEditingAchievement] = useState<any>(null);
+  const [filterYear, setFilterYear] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const { data } = useQuery({
-    queryKey: ["achievements"],
+  const { data, isLoading } = useQuery({
+    queryKey: ["student-achievements"],
     queryFn: () => api<{ achievements: any[] }>("/achievements", { token }),
     enabled: !!token,
   });
-  const { data: profileData } = useQuery({
-    queryKey: ["student-profile"],
-    queryFn: () => api<{ student: any }>("/students/me", { token }),
-    enabled: !!token,
-  });
 
+  const achievements = data?.achievements || [];
+
+  /* ─── Derived data ─────────────────────────────────────────────────────── */
+  const years = useMemo(() => {
+    const uniqueYears = Array.from(new Set(achievements.map((a) => new Date(a.date).getFullYear().toString())));
+    return ["All", ...uniqueYears.sort()];
+  }, [achievements]);
+
+  const filteredAchievements = useMemo(() => {
+    return achievements.filter((a) => {
+      const matchesYear = filterYear === "All" || new Date(a.date).getFullYear().toString() === filterYear;
+      const matchesSearch = 
+        a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a.position?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesYear && matchesSearch;
+    });
+  }, [achievements, filterYear, searchQuery]);
+
+  /* ─── Mutations ────────────────────────────────────────────────────────── */
   const createMutation = useMutation({
-    mutationFn: (values: any) =>
-      api("/achievements", { method: "POST", token, body: JSON.stringify(values) }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["achievements"] });
-      await queryClient.invalidateQueries({ queryKey: ["student-profile"] });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) =>
-      api(`/achievements/${id}`, { method: "DELETE", token }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["achievements"] });
-      await queryClient.invalidateQueries({ queryKey: ["student-profile"] });
+    mutationFn: (values: AchievementFormValues) => 
+      api("/achievements", {
+        method: "POST",
+        token,
+        body: JSON.stringify(values),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["student-achievements"] });
+      setIsAddModalOpen(false);
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, values }: { id: string; values: any }) =>
-      api(`/achievements/${id}`, { method: "PUT", token, body: JSON.stringify(values) }),
-    onSuccess: async () => {
-      setEditingId(null);
-      await queryClient.invalidateQueries({ queryKey: ["achievements"] });
-      await queryClient.invalidateQueries({ queryKey: ["student-profile"] });
+    mutationFn: (payload: { id: string; values: AchievementFormValues }) => 
+      api(`/achievements/${payload.id}`, {
+        method: "PUT",
+        token,
+        body: JSON.stringify(payload.values),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["student-achievements"] });
+      setEditingAchievement(null);
     },
   });
 
-  const achievements = data?.achievements || [];
-  const achievementYears = Array.from(
-    new Set(
-      achievements
-        .map((item) => {
-          if (!item.date) return "";
-          const parsed = new Date(item.date);
-          return Number.isNaN(parsed.getTime()) ? "" : String(parsed.getFullYear());
-        })
-        .filter(Boolean),
-    ),
-  ).sort((left, right) => Number(right) - Number(left));
-
-  const filteredAchievements =
-    selectedYear === "All"
-      ? achievements
-      : achievements.filter((item) => {
-          if (!item.date) return false;
-          const parsed = new Date(item.date);
-          return !Number.isNaN(parsed.getTime()) && String(parsed.getFullYear()) === selectedYear;
-        });
-
-  const studentProfile = profileData?.student;
-  const defaultAcademicYear = studentProfile?.year ? `Year ${studentProfile.year}` : undefined;
-  const defaultSemester = studentProfile?.semester ?? undefined;
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => 
+      api(`/achievements/${id}`, {
+        method: "DELETE",
+        token,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["student-achievements"] });
+    },
+  });
 
   return (
     <DashboardShell
       title="Achievements List"
-      subtitle="Track, manage and download your verified academic and technical achievements."
+      subtitle="TRACK, MANAGE AND DOWNLOAD YOUR VERIFIED ACADEMIC AND TECHNICAL ACHIEVEMENTS."
       nav={[
-        { label: "Overview",      href: "/student" },
-        { label: "Profile",       href: "/student/profile" },
-        { label: "Achievements",  href: "/student/achievements" },
-        { label: "Documents",     href: "/student/documents" },
+        { label: "Overview",     href: "/student" },
+        { label: "Profile",      href: "/student/profile" },
+        { label: "Achievements", href: "/student/achievements" },
+        { label: "Documents",    href: "/student/documents" },
       ]}
+      actions={
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all shadow-lg active:scale-95"
+        >
+          <Plus size={16} />
+          Add New Achievement
+        </button>
+      }
     >
-      {/* ── Toolbar (Leaner) ── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-2 animate-fade-up">
-        <div className="flex bg-white border border-surface-200 rounded-xl p-1 w-full sm:w-auto shadow-sm">
-          <div className={cn(
-            "flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer uppercase tracking-tight",
-            selectedYear === "All" ? "bg-brand-50 text-brand-700" : "text-slate-500 hover:text-brand-600"
-          )} onClick={() => setSelectedYear("All")}>
-            <Filter size={12} />
-            ALL
+      <div className="flex flex-col gap-6">
+        
+        {/* ── Filter Bar ── */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 backdrop-blur-sm border border-surface-200 p-4 rounded-[24px] shadow-sm animate-fade-up">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+            <Filter size={16} className="text-slate-400 shrink-0 mr-2" />
+            {years.map((year: any) => (
+              <button
+                key={year}
+                onClick={() => setFilterYear(year)}
+                className={`px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all whitespace-nowrap border ${
+                  filterYear === year 
+                    ? "bg-brand-600 text-white border-brand-600 shadow-md" 
+                    : "bg-white text-slate-500 border-surface-200 hover:border-brand-200"
+                }`}
+              >
+                {year}
+              </button>
+            ))}
           </div>
-          {achievementYears.slice(0, 3).map(yr => (
-            <div key={yr} className={cn(
-              "flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer uppercase tracking-tight",
-              selectedYear === yr ? "bg-brand-50 text-brand-700" : "text-slate-500 hover:text-brand-600"
-            )} onClick={() => setSelectedYear(yr)}>
-              {yr}
+          
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <input 
+              type="text"
+              placeholder="Search achievements..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-surface-200 rounded-2xl text-sm focus:border-brand-500 focus:ring-4 focus:ring-brand-100 outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        {/* ── Achievements Grid ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-up" style={{ animationDelay: "100ms" }}>
+          {isLoading ? (
+            <div className="col-span-full py-20 text-center text-slate-400">Loading your record...</div>
+          ) : filteredAchievements.length === 0 ? (
+            <div className="col-span-full py-20 text-center bg-white/50 border-2 border-dashed border-surface-200 rounded-[32px]">
+              <div className="text-4xl mb-4 text-slate-300">🏅</div>
+              <h3 className="text-lg font-bold text-ink mb-1">No achievements match your search</h3>
+              <p className="text-sm text-slate-500">Try narrowing your filters or add a new entry.</p>
             </div>
-          ))}
-          {achievementYears.length > 3 && (
-            <Select 
-              className="bg-transparent border-none shadow-none py-0 px-2 h-auto text-[10px] w-auto inline-flex pr-6"
-              containerClassName="w-auto"
-              value={achievementYears.includes(selectedYear) ? selectedYear : ""}
-              onChange={(e) => setSelectedYear(e.target.value)}
-            >
-              <option value="">MORE</option>
-              {achievementYears.slice(3).map(yr => <option key={yr} value={yr}>{yr}</option>)}
-            </Select>
+          ) : (
+            filteredAchievements.map((item, idx) => {
+              const bgClass = CATEGORY_STYLES[item.category] || "bg-slate-50 text-slate-500 border-slate-100";
+              
+              return (
+                <div 
+                  key={item.id} 
+                  className="group bg-white border border-surface-200 rounded-[32px] overflow-hidden hover:border-brand-400 hover:shadow-panel transition-all duration-500 flex flex-col"
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                >
+                  <div className="p-6 sm:p-8 flex-1">
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border shadow-sm ${bgClass}`}>
+                        {item.category}
+                      </span>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <button 
+                            onClick={() => setEditingAchievement(item)}
+                            className="p-1.5 hover:bg-brand-50 text-slate-400 hover:text-brand-600 rounded-lg transition-colors"
+                         >
+                            <Edit3 size={15} />
+                         </button>
+                         <button 
+                            onClick={() => { if(confirm("Delete this achievement?")) deleteMutation.mutate(item.id); }}
+                            className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors"
+                         >
+                            <Trash2 size={15} />
+                         </button>
+                      </div>
+                    </div>
+
+                    <h3 className="font-display text-lg font-bold text-ink leading-[1.2] mb-4 group-hover:text-brand-700 transition-colors line-clamp-2 uppercase">
+                      {item.title}
+                    </h3>
+
+                    <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-6 italic min-h-[40px]">
+                      {item.description || "No description provided."}
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-y-4 border-t border-surface-100 pt-6">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Achievement Year</span>
+                        <span className="text-xs font-bold text-ink">{new Date(item.date).getFullYear()}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Rank</span>
+                        <span className="text-xs font-bold text-brand-600 uppercase">{item.position || "-"}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Host</span>
+                        <span className="text-xs font-bold text-ink uppercase truncate pr-2">{item.organizedBy || "-"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-6 py-4 bg-surface-50 border-t border-surface-100 flex items-center justify-between">
+                     {item.certificateUrl ? (
+                        <a 
+                          href={item.certificateUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="flex items-center gap-2 text-[10px] font-bold text-brand-600 uppercase tracking-widest hover:text-brand-800 transition-colors"
+                        >
+                          <ExternalLink size={14} />
+                          View Doc
+                        </a>
+                     ) : (
+                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">No Certificate</span>
+                     )}
+                     <div className="flex items-center gap-1.5 text-slate-400">
+                        <Calendar size={12} />
+                        <span className="text-[9px] font-bold uppercase tracking-tighter">{formatDate(item.date)}</span>
+                     </div>
+                  </div>
+                </div>
+              );
+            })
           )}
         </div>
-
-        <button 
-          className="w-full sm:w-auto bg-brand-600 text-white font-bold text-[10px] py-2 px-4 rounded-xl hover:bg-brand-700 hover:-translate-y-0.5 hover:shadow-md transition-all flex items-center justify-center gap-2 uppercase tracking-widest" 
-          type="button" 
-          onClick={() => setIsModalOpen(true)}
-        >
-          <Plus size={14} />
-          ADD NEW ACHIEVEMENT
-        </button>
       </div>
 
-      {/* ── Grid ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredAchievements.map((item, idx) => {
-          const styleClass = CATEGORY_STYLES[item.category] || "bg-slate-50 text-slate-500 border-slate-100";
-          const isEditing = editingId === item._id;
-          const achievementYear = item.date ? new Date(item.date).getFullYear() : "";
-
-          return (
-            <div
-              key={item._id}
-              className="group bg-white border border-surface-200 rounded-3xl overflow-hidden hover:border-brand-200 hover:shadow-panel transition-all animate-fade-up relative"
-              style={{ animationDelay: `${idx * 40}ms` }}
-            >
-              {/* Header */}
-              <div className="px-5 py-3 border-b border-surface-50 flex flex-col gap-2 min-h-[90px] justify-center bg-surface-50/30 group-hover:bg-brand-50/20 transition-colors">
-                <div className="flex items-center justify-between gap-3">
-                  <span className={cn("px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest border shadow-sm", styleClass)}>
-                    {item.category?.slice(0, 10)}
-                  </span>
-                </div>
-                <h3 className="font-display font-semibold text-base text-ink leading-tight line-clamp-1 group-hover:text-brand-700 transition-colors tracking-tight">
-                  {item.title}
-                </h3>
-              </div>
-
-              {/* Body */}
-              <div className="p-5">
-                <p className="text-[11px] text-slate-500 font-medium leading-relaxed line-clamp-2 mb-4 min-h-[32px]">
-                  {item.description || "Verified entry."}
-                </p>
-
-                <div className="grid grid-cols-2 gap-y-3 border-t border-surface-50 pt-4">
-                   <Field label="Year" value={achievementYear} />
-                   <Field label="Sem" value={item.semester} />
-                   <Field label="Rank" value={item.position} />
-                   <Field label="Host" value={item.organizedBy} />
-                </div>
-
-                {/* Actions */}
-                <div className="mt-6 flex items-center justify-between gap-3 pt-4 border-t border-surface-50 group/footer">
-                   {item.certificateUrl ? (
-                     <a 
-                       href={item.certificateUrl} 
-                       target="_blank" 
-                       rel="noreferrer"
-                       className="flex items-center gap-1.5 text-[9px] font-bold text-brand-600 hover:text-brand-700 transition-colors uppercase tracking-widest"
-                     >
-                       <ExternalLink size={12} />
-                       VIEW DOC
-                     </a>
-                   ) : <div />}
-
-                   <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        className="p-2 rounded-lg bg-surface-50 border border-surface-200 text-slate-500 hover:text-brand-600 hover:border-brand-200 transition-all"
-                        onClick={() => {
-                          setEditingId(item._id);
-                          setEditForm({
-                            title:        item.title,
-                            description:  item.description,
-                            category:     item.category,
-                            date:         item.date?.slice(0, 10) || "",
-                            academicYear: item.academicYear || "",
-                            semester:     item.semester ? String(item.semester) : "",
-                            activityType: item.activityType || "",
-                            organizedBy:  item.organizedBy || ORGANIZED_BY_OPTIONS[0],
-                            position:     item.position || POSITION_OPTIONS[0],
-                          });
-                        }}
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                      <button 
-                        className="p-2 rounded-lg bg-red-50 border border-red-100 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
-                        onClick={() => deleteMutation.mutate(item._id)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                   </div>
-                </div>
-              </div>
-
-              {/* Editing Overlay (Simplified) */}
-              {isEditing && (
-                <div className="absolute inset-0 bg-white z-10 p-6 flex flex-col gap-4 overflow-y-auto">
-                    <h4 className="font-display font-bold text-ink">Edit Achievement</h4>
-                    <input className={inputClasses} value={editForm.title} onChange={e=>setEditForm(c=>({...c, title:e.target.value}))} placeholder="Title" />
-                    <textarea className={cn(inputClasses, "min-h-[100px]")} value={editForm.description} onChange={e=>setEditForm(c=>({...c, description:e.target.value}))} placeholder="Description" />
-                    <div className="grid grid-cols-2 gap-3">
-                       <input className={inputClasses} type="date" value={editForm.date} onChange={e=>setEditForm(c=>({...c, date:e.target.value}))} />
-                       <Select value={editForm.category} onChange={e=>setEditForm(c=>({...c, category:e.target.value}))}>
-                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                       </Select>
-                    </div>
-                    <div className="flex gap-3 mt-auto">
-                      <button className="flex-1 bg-brand-600 text-white font-bold py-2.5 rounded-xl text-xs hover:bg-brand-700 transition-colors" onClick={() => updateMutation.mutate({ id: item._id, values: editForm })}>SAVE</button>
-                      <button className="flex-1 bg-surface-100 text-slate-600 font-bold py-2.5 rounded-xl text-xs hover:bg-surface-200 transition-colors" onClick={() => setEditingId(null)}>CANCEL</button>
-                    </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── Empty state ── */}
-      {filteredAchievements.length === 0 && (
-        <div className="text-center py-24 border-2 border-dashed border-surface-200 rounded-[32px] bg-white animate-fade-up">
-          <Award size={64} className="mx-auto mb-4 text-slate-200" />
-          <h3 className="font-display font-bold text-2xl text-ink mb-2">
-            {selectedYear === "All" ? "No achievements recorded" : `Nothing found for ${selectedYear}`}
-          </h3>
-          <p className="text-sm text-slate-500 font-medium mb-8 max-w-sm mx-auto">
-            {selectedYear === "All"
-              ? "Start building your professional profile by adding your first achievement today."
-              : "Try switching to another year or reset the filters to see all your accomplishments."}
-          </p>
-          <button 
-            className="inline-flex items-center gap-2 bg-brand-600 text-white font-bold text-xs py-3 px-8 rounded-2xl hover:bg-brand-700 hover:-translate-y-0.5 hover:shadow-md transition-all uppercase tracking-widest"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <Plus size={18} />
-            Add First Achievement
-          </button>
+      {/* ── Modals ── */}
+      <Modal 
+        open={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        title="Record Achievement"
+      >
+        <div className="p-1">
+          <AchievementForm 
+            token={token}
+            onSubmit={async (values) => {
+              await createMutation.mutateAsync(values);
+            }}
+            submitLabel="Save Achievement"
+          />
         </div>
-      )}
+      </Modal>
 
-      {/* ── Modal ── */}
-      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add achievement">
-        <AchievementForm
-          onSubmit={async (values) => {
-            await createMutation.mutateAsync(values);
-            setIsModalOpen(false);
-          }}
-          token={token}
-          defaultAcademicYear={defaultAcademicYear}
-          defaultSemester={defaultSemester}
-        />
+      <Modal 
+        open={!!editingAchievement} 
+        onClose={() => setEditingAchievement(null)} 
+        title="Edit Achievement"
+      >
+        <div className="p-1">
+          <AchievementForm 
+            token={token}
+            initialValues={editingAchievement}
+            onSubmit={async (values) => {
+              await updateMutation.mutateAsync({ id: editingAchievement.id, values });
+            }}
+            submitLabel="Update Record"
+            requireCertificate={false}
+          />
+        </div>
       </Modal>
     </DashboardShell>
   );
