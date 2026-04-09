@@ -255,8 +255,8 @@ export default function AdminStudentsPage() {
                       }
                       setBulkMessage(`Bulk update: ${res.success} succeeded, ${res.failed} failed.`);
                       await queryClient.invalidateQueries({ queryKey: ["admin-students"] });
-                    } catch (err) {
-                      setFormError("Bulk update failed. Check Excel format.");
+                    } catch (err: any) {
+                      setFormError(err?.message || "Bulk update failed. Check Excel format.");
                     }
                   }}
                 />
@@ -372,8 +372,8 @@ export default function AdminStudentsPage() {
                           }
                           setBulkMessage(`Bulk enrollment: ${res.success} succeeded, ${res.failed} failed.`);
                           await queryClient.invalidateQueries({ queryKey: ["admin-students"] });
-                        } catch (err) {
-                          setFormError("Excel upload failed. Check format.");
+                        } catch (err: any) {
+                          setFormError(err?.message || "Excel upload failed. Check format.");
                         }
                       }}
                     />
