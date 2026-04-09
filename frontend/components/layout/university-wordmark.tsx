@@ -11,7 +11,7 @@ export function UniversityWordmark({
 }) {
   return (
     <img
-      src="/achieve/brand/vignan-logo.png"
+      src="/brand/vignan-logo.png"
       alt={alt}
       className={className}
       style={style}
