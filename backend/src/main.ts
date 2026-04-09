@@ -42,8 +42,20 @@ async function bootstrap() {
 
   app.setGlobalPrefix('achieve');
 
+  // Log all registered routes for production troubleshooting
+  const server = app.getHttpAdapter().getInstance();
+  const routes = server?._router?.stack
+    ?.filter((r: any) => r.route)
+    ?.map((r: any) => `${Object.keys(r.route.methods).join(',').toUpperCase()} ${r.route.path}`);
+  
+  if (routes) {
+    console.log('--- Registered Routes ---');
+    routes.forEach((r: string) => console.log(r));
+    console.log('-------------------------');
+  }
+
   const port = process.env.PORT || 5001;
   await app.listen(port);
-  console.log(`API running on port ${port}`);
+  console.log(`API running on port ${port} with prefix /achieve`);
 }
 bootstrap();

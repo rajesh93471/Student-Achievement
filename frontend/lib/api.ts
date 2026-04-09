@@ -13,7 +13,12 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     headers.set("Authorization", `Bearer ${options.token}`);
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  // Safe URL joining to prevent double-slash issues
+  const baseUrl = API_URL.replace(/\/$/, "");
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  const fullUrl = `${baseUrl}${cleanPath}`;
+
+  const response = await fetch(fullUrl, {
     ...options,
     headers,
     cache: "no-store",
