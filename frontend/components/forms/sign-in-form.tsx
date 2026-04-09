@@ -47,6 +47,7 @@ export function SignInForm() {
   const onSubmit = async (values: LoginValues) => {
     try {
       setError(null);
+      console.log("Attempting login at endpoint: /auth/login");
       const response = await api<{ token: string; user: AuthUser & { role: Role } }>("/auth/login", {
         method: "POST",
         body: JSON.stringify(values),

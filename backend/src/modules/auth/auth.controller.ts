@@ -5,7 +5,9 @@ import { RegisterStudentDto, LoginDto } from './dto';
 
 @Controller('/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {
+    console.log('--- AUTH SYSTEM ACTIVE ---');
+  }
 
   @Post('register/student')
   registerStudent(@Body() body: RegisterStudentDto) {
