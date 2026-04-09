@@ -20,11 +20,13 @@ export function DashboardShell({
   title,
   subtitle,
   nav,
+  actions,
   children,
 }: {
   title: string;
   subtitle: string;
   nav: NavItem[];
+  actions?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -194,6 +196,7 @@ export function DashboardShell({
 
             {/* Actions */}
             <div className="flex items-center gap-2 shrink-0">
+              {actions}
               {user?.role === "admin" && (
                 <div className="relative" ref={notifRef}>
                   <button
