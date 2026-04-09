@@ -54,9 +54,11 @@ export function SignInForm() {
       setSession(response);
       const actualRole  = response.user.role;
       const roleToUse   = values.role === actualRole ? values.role : actualRole;
-      router.push(
-        roleToUse === "admin"  ? "/admin"  : "/student"
-      );
+      
+      let redirectPath = "/student";
+      if (roleToUse === "admin") redirectPath = "/admin";
+
+      router.push(redirectPath);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in failed");
     }
@@ -371,15 +373,13 @@ export function SignInForm() {
               }}>
                 Password
               </label>
-              {selectedRole === "student" ? (
-                <button
-                  type="button"
-                  className="si-link-action"
-                  onClick={openForgotPassword}
-                >
-                  Forgot password?
-                </button>
-              ) : null}
+              <button
+                type="button"
+                className="si-link-action"
+                onClick={openForgotPassword}
+              >
+                Forgot password?
+              </button>
             </div>
             <div className="password-field">
               <input
@@ -447,24 +447,21 @@ export function SignInForm() {
           </button>
         </form>
 
-        {/* Footer links */}
         <div style={{
-          marginTop: 24,
-          paddingTop: 20,
-          borderTop: "1px solid #e2e8f0",
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 6,
-          alignItems: "center",
+          marginTop: 12,
+          textAlign: "center",
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 10,
+          color: "#94a3b8",
+          letterSpacing: "0.05em",
+          textTransform: "uppercase",
+          fontWeight: 500,
         }}>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "#64748b" }}>
-            New here?
-          </span>
-          <Link href="/signup" className="si-link-amber">Student sign up</Link>
+          Developed by <span style={{ color: "#475569", fontWeight: 700 }}>Konda Rajesh</span>
         </div>
       </div>
 
-      <Modal open={isForgotPasswordOpen} onClose={() => setIsForgotPasswordOpen(false)} title="Reset student password">
+      <Modal open={isForgotPasswordOpen} onClose={() => setIsForgotPasswordOpen(false)} title="Reset password">
         <div style={{ display: "grid", gap: 18 }}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {[
@@ -503,17 +500,17 @@ export function SignInForm() {
               }}
             >
               <p style={{ margin: 0, color: "#475569", fontSize: 14, lineHeight: 1.7 }}>
-                Enter your registration number or student email. We will send a one-time OTP to the email saved in your profile.
+                Enter your email address or registration number. We will send a one-time OTP to your registered email.
               </p>
               <div>
                 <label style={{ display: "block", marginBottom: 8, color: "#0f172a", fontSize: 13, fontWeight: 600 }}>
-                  Registration number or email
+                  Email or registration number
                 </label>
                 <input
                   type="text"
                   value={resetIdentifier}
                   onChange={(event) => setResetIdentifier(event.target.value)}
-                  placeholder="e.g. 231FA04023 or student@vignan.ac.in"
+                  placeholder="e.g. admin@vignan.ac.in or 231FA04023"
                   style={modalInputStyle}
                   required
                 />

@@ -11,6 +11,7 @@ build/
 *.log
 *.tsbuildinfo
 .codex/
+.codex-publish-student-achievement2/
 .next/
 frontend/out/
 backend/uploads/

@@ -19,7 +19,7 @@ export default function ReportsPage() {
     enabled: !!token,
   });
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/achieve";
 
   const downloadReport = async (format: "pdf" | "excel") => {
     if (!token) return;

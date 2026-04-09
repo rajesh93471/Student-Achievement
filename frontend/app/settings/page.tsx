@@ -1,13 +1,15 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { useAuth } from "@/components/layout/providers";
 import { api } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { Edit3, Check, X as CloseIcon } from "lucide-react";
 
 export default function SettingsPage() {
-  const { user, token } = useAuth();
+  const { user, token, setSession } = useAuth();
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
     newPassword: "",
@@ -15,6 +17,35 @@ export default function SettingsPage() {
   });
   const [passwordMessage, setPasswordMessage] = useState<string>("");
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [emailInput, setEmailInput] = useState(user?.email || "");
+  const [emailMessage, setEmailMessage] = useState<string>("");
+
+  useEffect(() => {
+    if (user?.email) setEmailInput(user.email);
+  }, [user?.email]);
+
+  const emailMutation = useMutation({
+    mutationFn: (newEmail: string) =>
+      api<{ email: string; settings: any }>("/users/me/settings", {
+        method: "PUT",
+        token,
+        body: JSON.stringify({ email: newEmail }),
+      }),
+    onSuccess: (data) => {
+      if (user && token) {
+        setSession({ token, user: { ...user, email: data.email } });
+      }
+      setIsEditingEmail(false);
+      setEmailMessage("Email updated successfully.");
+      setTimeout(() => setEmailMessage(""), 3000);
+    },
+    onError: () => {
+      setEmailMessage("Failed to update email.");
+      setTimeout(() => setEmailMessage(""), 3000);
+    },
+  });
 
   const passwordMutation = useMutation({
     mutationFn: (payload: typeof passwordForm) =>
@@ -67,9 +98,53 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-5">
-              <div className="p-4 rounded-2xl bg-surface-50 border border-surface-100/50">
+              <div className="p-4 rounded-2xl bg-surface-50 border border-surface-100/50 relative group/email">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Email address</p>
-                <p className="text-sm font-semibold text-ink break-all">{user?.email || "No email"}</p>
+                {isEditingEmail ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <input
+                      className="flex-1 bg-white border border-surface-200 rounded-lg px-3 py-1.5 text-sm font-semibold text-ink outline-none focus:border-brand-500"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      disabled={emailMutation.isPending}
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => emailMutation.mutate(emailInput)}
+                      disabled={emailMutation.isPending}
+                      className="p-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                    >
+                      <Check size={14} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingEmail(false);
+                        setEmailInput(user?.email || "");
+                      }}
+                      className="p-1.5 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition-colors"
+                    >
+                      <CloseIcon size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-ink break-all">{user?.email || "No email"}</p>
+                    <button
+                      onClick={() => setIsEditingEmail(true)}
+                      className="p-1.5 text-slate-300 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-all"
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                  </div>
+                )}
+                {emailMessage && (
+                  <p className={cn(
+                    "text-[9px] font-bold mt-2 uppercase tracking-tight",
+                    emailMessage.includes("successfully") ? "text-emerald-600" : "text-rose-600"
+                  )}>
+                    {emailMessage}
+                  </p>
+                )}
               </div>
               <div className="p-4 rounded-2xl bg-surface-50 border border-surface-100/50">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Status</p>

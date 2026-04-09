@@ -13,7 +13,7 @@ const getStorageConfig = () => ({
   bucketName: process.env.AWS_S3_BUCKET,
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'https://160.187.169.41/achieve/api',
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/achieve',
 });
 
 const getS3Client = () => {

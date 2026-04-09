@@ -6,6 +6,7 @@ import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { useAuth } from "@/components/layout/providers";
 import { api } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
+import { Award, FileText, Calendar, GraduationCap, Plus, User, ArrowRight, BookOpen } from "lucide-react";
 
 /* ─── Category + status colors (shared system) ───────────────────────────── */
 const CATEGORY_STYLES: Record<string, string> = {
@@ -27,28 +28,42 @@ function DashStatCard({
   label,
   value,
   helper,
+  icon: Icon,
   accent,
   delay,
 }: {
   label: string;
   value: string | number;
   helper: string;
+  icon: any;
   accent: "amber" | "blue" | "emerald" | "purple";
   delay: number;
 }) {
   const accentColors = {
-    amber: "text-amber-500 bg-amber-50",
-    blue: "text-brand-500 bg-brand-50",
-    emerald: "text-emerald-500 bg-emerald-50",
-    purple: "text-purple-500 bg-purple-50"
+    amber:   "text-amber-500   bg-amber-50   border-amber-100   shadow-amber-100/20",
+    blue:    "text-brand-500   bg-brand-50   border-brand-100   shadow-brand-100/20",
+    emerald: "text-emerald-500 bg-emerald-50 border-emerald-100 shadow-emerald-100/20",
+    purple:  "text-purple-500  bg-purple-50  border-purple-100  shadow-purple-100/20"
   };
 
   return (
-    <div className={`bg-white border border-surface-200 rounded-2xl p-4 relative overflow-hidden animate-fade-up hover:border-brand-200 hover:shadow-panel transition-all shadow-sm group`} style={{ animationDelay: `${delay}ms` }}>
-      <div className={`absolute -top-6 -right-6 w-16 h-16 rounded-full blur-[20px] ${accentColors[accent].split(' ')[1]} opacity-40 pointer-events-none group-hover:opacity-60 transition-opacity`}></div>
-      <p className="font-sans text-[9px] font-bold tracking-widest uppercase text-slate-400 mb-1">{label}</p>
-      <p className={`font-display text-2xl font-semibold leading-none mb-1 ${accentColors[accent].split(' ')[0]}`}>{value}</p>
-      <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-tighter">{helper}</p>
+    <div 
+      className={`bg-white/70 backdrop-blur-md border border-surface-200 rounded-3xl p-5 relative overflow-hidden animate-fade-up hover:border-brand-300 hover:shadow-panel transition-all shadow-sm group`} 
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className={`absolute -top-10 -right-10 w-24 h-24 rounded-full blur-[30px] ${accentColors[accent].split(' ')[1]} opacity-20 pointer-events-none group-hover:opacity-40 transition-opacity`}></div>
+      
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-2.5 rounded-2xl ${accentColors[accent].split(' ')[1]} ${accentColors[accent].split(' ')[0]} border ${accentColors[accent].split(' ')[2]} group-hover:scale-110 transition-transform`}>
+           <Icon size={20} />
+        </div>
+        <p className={`font-display text-2xl font-bold leading-none ${accentColors[accent].split(' ')[0]}`}>{value}</p>
+      </div>
+      
+      <div>
+        <p className="font-sans text-[10px] font-bold tracking-widest uppercase text-slate-400 mb-0.5 group-hover:text-brand-600 transition-colors">{label}</p>
+        <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-tight leading-tight">{helper}</p>
+      </div>
     </div>
   );
 }
@@ -78,10 +93,13 @@ export default function StudentDashboardPage() {
   const student      = data?.student;
   const achievements = data?.achievements || [];
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
   return (
     <DashboardShell
-      title="Student dashboard"
-      subtitle="Track profile strength, documents, and achievements in one place."
+      title="Overview"
+      subtitle="Track your academic record, documents, and campus achievements."
       nav={[
         { label: "Overview",     href: "/student" },
         { label: "Profile",      href: "/student/profile" },
@@ -89,12 +107,47 @@ export default function StudentDashboardPage() {
         { label: "Documents",    href: "/student/documents" },
       ]}
     >
+      {/* ── Welcome Hero ── */}
+      <section className="relative overflow-hidden rounded-[32px] bg-brand-900 p-8 sm:p-10 shadow-2xl animate-fade-up">
+         {/* Background Orbs */}
+         <div className="absolute top-0 right-0 w-80 h-80 bg-brand-600 rounded-full blur-[100px] opacity-30 -translate-y-1/2 translate-x-1/2"></div>
+         <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-500 rounded-full blur-[80px] opacity-20 translate-y-1/2 -translate-x-1/2"></div>
+         
+         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="max-w-xl">
+               <p className="text-brand-300 font-bold uppercase tracking-[0.2em] text-[10px] mb-3">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+               <h1 className="font-display text-3xl sm:text-4xl font-bold text-white mb-3">
+                  {greeting}, <em className="not-italic text-accent-400">{student?.fullName?.split(' ')[0] || "Student"}</em>!
+               </h1>
+               <p className="text-brand-100/80 text-sm leading-relaxed max-w-md">
+                  Your academic record is up to date. You have <span className="text-white font-bold">{achievements.length} verified achievements</span> and <span className="text-white font-bold">{student?.documentsCount || 0} documents</span> in your vault.
+               </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+               <Link 
+                  href="/student/achievements" 
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-white text-brand-900 rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+               >
+                  <Plus size={16} />
+                  New Achievement
+               </Link>
+               <Link 
+                  href="/student/documents" 
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-white/10 text-white backdrop-blur-md border border-white/20 rounded-2xl text-[11px] font-bold uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all"
+               >
+                  <FileText size={16} />
+                  Vault
+               </Link>
+            </div>
+         </div>
+      </section>
+
       {/* ── Stat cards ── */}
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <DashStatCard label="CGPA"         value={student?.cgpa ?? "-"}               helper="Latest cumulative GPA"       accent="amber" delay={0}   />
-        <DashStatCard label="Semester"     value={student?.semester ?? "-"}           helper="Current academic term"       accent="blue" delay={60}  />
-        <DashStatCard label="Achievements" value={student?.achievementsCount ?? 0}    helper="Total registered entries"  accent="emerald" delay={120} />
-        <DashStatCard label="Documents"    value={student?.documentsCount ?? 0}       helper="Stored academic records"     accent="purple" delay={180} />
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <DashStatCard label="CGPA"         value={student?.cgpa ?? "-"}               helper="Cumulative Grade Pt"       icon={GraduationCap} accent="amber" delay={100}   />
+        <DashStatCard label="Semester"     value={student?.semester ?? "-"}           helper="Current term progress"    icon={Calendar} accent="blue" delay={160}  />
+        <DashStatCard label="Achievements" value={student?.achievementsCount ?? 0}    helper="Total verified entries"  icon={Award} accent="emerald" delay={220} />
+        <DashStatCard label="Documents"    value={student?.documentsCount ?? 0}       helper="Academic file storage"    icon={FileText} accent="purple" delay={280} />
       </section>
 
       {/* ── Profile snapshot + highlights ── */}
@@ -172,40 +225,40 @@ export default function StudentDashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {achievements.map((item) => {
+              {achievements.slice(0, 6).map((item) => {
                 const bgClass = CATEGORY_STYLES[item.category] || "bg-slate-50 text-slate-500 border-slate-100";
 
               return (
-                <div key={item._id} className="flex flex-col bg-white border border-surface-100 rounded-2xl overflow-hidden hover:border-brand-200 hover:shadow-panel transition-all group">
+                <div key={item._id} className="group relative flex flex-col bg-white border border-surface-200 rounded-[24px] overflow-hidden hover:border-brand-400 hover:shadow-panel transition-all duration-300">
                   
-                  {/* Header */}
-                  <div className="px-4 py-3 border-b border-surface-50 flex items-start justify-between gap-2 bg-surface-50 group-hover:bg-brand-50/30 transition-colors">
-                    <h3 className="font-display font-semibold text-ink leading-tight line-clamp-1 text-sm tracking-tight">
-                      {item.title}
-                    </h3>
+                  {/* Category Badge Floating */}
+                  <div className="absolute top-4 right-4 z-10">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border ${bgClass} uppercase tracking-[0.1em] shadow-sm`}>
+                      {item.category}
+                    </span>
                   </div>
 
-                  {/* Body (details grid) */}
-                  <div className="p-4 flex-1 flex flex-col gap-3">
-                      <div>
-                        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">Type</p>
-                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold border ${bgClass} uppercase tracking-tighter`}>
-                          {item.category?.slice(0, 10)}
-                        </span>
-                      </div>
+                  {/* Body Content */}
+                  <div className="p-6 flex-1 flex flex-col pt-10">
+                    <h3 className="font-display font-bold text-ink leading-tight mb-3 text-base line-clamp-2 group-hover:text-brand-600 transition-colors">
+                      {item.title}
+                    </h3>
                     
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Date</p>
-                      <p className="text-[11px] font-semibold text-ink">{formatDate(item.date)}</p>
+                    <div className="mt-auto flex items-center gap-4 text-slate-400">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar size={12} className="shrink-0" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">{formatDate(item.date)}</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Footer actions */}
+                  {/* Action Link overlay-ish */}
                   <Link 
                     href="/student/achievements"
-                    className="px-4 py-2 border-t border-surface-50 bg-surface-50/30 flex items-center justify-end gap-2 text-[10px] font-bold text-brand-600 uppercase tracking-widest hover:text-brand-700 transition-colors"
+                    className="px-6 py-4 bg-surface-50 border-t border-surface-100 flex items-center justify-between text-[10px] font-bold text-brand-600 uppercase tracking-widest group-hover:bg-brand-50 transition-colors"
                   >
-                       VIEW DETAILS →
+                       Details
+                       <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </Link>
 
                 </div>

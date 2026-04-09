@@ -39,43 +39,45 @@ export class AuthService {
     return createHash('sha256').update(token).digest('hex');
   }
 
-  private async resolveStudentUserByIdentifier(identifier: string) {
+  private async resolveUserByIdentifier(identifier: string) {
     const normalizedIdentifier = this.normalizeIdentifier(identifier);
     if (!normalizedIdentifier) {
       throw new BadRequestException('Registration number or email is required');
     }
 
     const normalizedEmail = normalizedIdentifier.toLowerCase();
-    const normalizedStudentId = normalizedIdentifier.toUpperCase();
-    const student = await this.prisma.student.findFirst({
-      where: {
-        OR: [{ studentId: normalizedStudentId }, { email: normalizedEmail }],
-      },
+    
+    // First try finding user by email
+    let user = await this.prisma.user.findUnique({
+      where: { email: normalizedEmail },
     });
 
-    if (!student) {
-      throw new NotFoundException('Student account not found');
+    let student: any = null;
+
+    if (!user) {
+      // If not found by email, try finding student by registration number
+      const normalizedStudentId = normalizedIdentifier.toUpperCase();
+      student = await this.prisma.student.findUnique({
+        where: { studentId: normalizedStudentId },
+      });
+
+      if (student) {
+        user = await this.prisma.user.findUnique({
+          where: { id: student.userId },
+        });
+      }
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: student.userId },
-    });
-    if (!user || user.role !== 'student') {
-      throw new NotFoundException('Student account not found');
+    if (!user) {
+      throw new NotFoundException('Account not found');
     }
 
-    if (!student.email) {
-      throw new BadRequestException(
-        'No email is available for this student account',
-      );
-    }
-
-    return { student, user };
+    return { user, student };
   }
 
   private async sendPasswordResetOtpEmail(
     email: string,
-    studentName: string,
+    userName: string,
     otp: string,
   ) {
     const host = process.env.SMTP_HOST;
@@ -109,8 +111,8 @@ export class AuthService {
       subject: 'Your Vignan password reset OTP',
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #0f172a;">
-          <p>Hello ${studentName || 'Student'},</p>
-          <p>Use the following OTP to reset your Vignan Student Portal password:</p>
+          <p>Hello ${userName || 'User'},</p>
+          <p>Use the following OTP to reset your Vignan account password:</p>
           <div style="font-size: 28px; font-weight: 700; letter-spacing: 0.24em; color: #1d4ed8; margin: 18px 0;">
             ${otp}
           </div>
@@ -118,7 +120,7 @@ export class AuthService {
           <p>If you did not request this, you can safely ignore this email.</p>
         </div>
       `,
-      text: `Hello ${studentName || 'Student'}, your password reset OTP is ${otp}. It expires in ${this.otpExpiryMinutes} minutes.`,
+      text: `Hello ${userName || 'User'}, your password reset OTP is ${otp}. It expires in ${this.otpExpiryMinutes} minutes.`,
     });
   }
 
@@ -174,6 +176,7 @@ export class AuthService {
     };
   }
 
+
   async login(payload: LoginDto) {
     const normalizedIdentifier = String(payload.identifier || '').trim();
     let user: Awaited<ReturnType<typeof this.prisma.user.findUnique>> = null;
@@ -220,6 +223,7 @@ export class AuthService {
       user.role === 'student'
         ? await this.prisma.student.findUnique({ where: { userId: user.id } })
         : null;
+
     return {
       user: {
         id: user.id,
@@ -233,7 +237,7 @@ export class AuthService {
   }
 
   async requestPasswordResetOtp(body: { identifier: string }) {
-    const { student, user } = await this.resolveStudentUserByIdentifier(
+    const { user } = await this.resolveUserByIdentifier(
       body.identifier,
     );
     const otp = String(randomInt(100000, 1000000));
@@ -255,16 +259,16 @@ export class AuthService {
       },
     });
 
-    await this.sendPasswordResetOtpEmail(student.email, student.fullName, otp);
+    await this.sendPasswordResetOtpEmail(user.email, user.name, otp);
 
     return {
       message: 'OTP sent to your email address',
-      email: student.email,
+      email: user.email,
     };
   }
 
   async verifyPasswordResetOtp(body: { identifier: string; otp: string }) {
-    const { user } = await this.resolveStudentUserByIdentifier(body.identifier);
+    const { user } = await this.resolveUserByIdentifier(body.identifier);
     const otpValue = String(body.otp || '').trim();
     if (!otpValue) {
       throw new BadRequestException('OTP is required');
@@ -327,7 +331,7 @@ export class AuthService {
     resetToken: string;
     password: string;
   }) {
-    const { user } = await this.resolveStudentUserByIdentifier(body.identifier);
+    const { user } = await this.resolveUserByIdentifier(body.identifier);
     const token = String(body.resetToken || '').trim();
     const password = String(body.password || '');
 

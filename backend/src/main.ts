@@ -40,7 +40,7 @@ async function bootstrap() {
   );
   app.useGlobalInterceptors(new MongoIdInterceptor());
 
-  app.setGlobalPrefix('achieve/api');
+  app.setGlobalPrefix('achieve');
 
   const port = process.env.PORT || 5001;
   await app.listen(port);

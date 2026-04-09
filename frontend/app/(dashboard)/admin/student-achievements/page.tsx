@@ -127,7 +127,7 @@ export default function AdminStudentAchievementsPage() {
     return Array.from(groups.values());
   }, [filteredAchievements]);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/achieve";
 
   const handleExport = async (format: "pdf" | "excel" | "zip") => {
     if (!token) return;

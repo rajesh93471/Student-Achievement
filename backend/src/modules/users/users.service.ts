@@ -20,13 +20,32 @@ export class UsersService {
   }
 
   async updateMySettings(user: any, body: any) {
-    const found = await this.prisma.user.findUnique({ where: { id: user.id } });
+    const { email, ...settings } = body;
+    const found = await this.prisma.user.findUnique({ 
+      where: { id: user.id },
+      include: { student: true }
+    });
     if (!found) throw new NotFoundException('User not found');
+    
+    const updateData: any = {
+      settings: { ...((found.settings as any) || {}), ...settings }
+    };
+
+    if (email && email !== found.email) {
+      updateData.email = email;
+      if (found.student) {
+        await this.prisma.student.update({
+          where: { id: found.student.id },
+          data: { email: email }
+        });
+      }
+    }
+
     const updated = await this.prisma.user.update({
       where: { id: user.id },
-      data: { settings: { ...((found.settings as any) || {}), ...body } },
+      data: updateData,
     });
-    return { settings: updated.settings };
+    return { settings: updated.settings, email: updated.email };
   }
 
   async changeMyPassword(user: any, body: any) {

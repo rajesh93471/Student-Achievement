@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://160.187.169.41/achieve/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/achieve";
 
 type RequestOptions = RequestInit & {
   token?: string | null;
@@ -6,7 +6,9 @@ type RequestOptions = RequestInit & {
 
 export async function api<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers = new Headers(options.headers || {});
-  headers.set("Content-Type", "application/json");
+  if (!(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
   if (options.token) {
     headers.set("Authorization", `Bearer ${options.token}`);
   }

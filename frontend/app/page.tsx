@@ -6,7 +6,7 @@ import { UniversityWordmark } from "@/components/layout/university-wordmark";
 const stats = [
   { value: "2 Roles", label: "Student, Admin", sub: "role-based access and dashboards" },
   { value: "1 Portal", label: "Profiles and Documents", sub: "single source of student records" },
-  { value: "Track", label: "Achievements & Approvals", sub: "structured evidence by year and type" },
+  { value: "Track", label: "Achievements & Milestones", sub: "structured evidence by year and type" },
   { value: "Export", label: "Reports and Analytics", sub: "accreditation-ready summaries" },
 ];
 
@@ -33,7 +33,7 @@ const features = [
     icon: "RP",
     accent: "text-accent-600 bg-accent-50 border-accent-200",
     title: "Analytics and Reports",
-    body: "Give admins quick views of top achievers, department activity, pending approvals, and downloadable evidence for reviews.",
+    body: "Give admins quick views of top achievers, department activity, verify entries, and downloadable evidence for reviews.",
   },
 ];
 
@@ -53,21 +53,21 @@ const workflows = [
   {
     step: "03",
     accent: "bg-emerald-500",
-    title: "Review, Approve, and Report",
-    body: "Admins review submissions, verify student records, and the institution generates reports for analysis and accreditation.",
+    title: "Verify and Report",
+    body: "Institutional teams verify submissions, maintain student records, and generate reports for analysis and accreditation.",
   },
 ];
 
 const students = [
   { name: "Likitha R.", dept: "CSE - 3rd Year", badge: "4 Docs Verified", badgeColor: "text-teal-700 bg-teal-50 border-teal-200", bg: "bg-brand-900" },
   { name: "Sai Charan", dept: "ECE - 2nd Year", badge: "2 Achievements Added", badgeColor: "text-brand-600 bg-brand-50 border-brand-200", bg: "bg-slate-900" },
-  { name: "Harshini M.", dept: "MBA - 1st Year", badge: "Approval Pending", badgeColor: "text-accent-600 bg-accent-50 border-accent-200", bg: "bg-accent-700" },
+  { name: "Harshini M.", dept: "MBA - 1st Year", badge: "National Finalist", badgeColor: "text-indigo-600 bg-indigo-50 border-indigo-200", bg: "bg-indigo-700" },
 ];
 
 const heroBenefits = [
   { title: "Role-Based Access", body: "Separate student and admin views with focused actions." },
   { title: "Document Verification", body: "Collect, review, and maintain proofs in one structured portal." },
-  { title: "Reports and Analytics", body: "Track approvals, achievements, and institutional summaries quickly." },
+  { title: "Reports and Analytics", body: "Track milestones, achievements, and institutional summaries quickly." },
 ];
 
 export default function HomePage() {
@@ -102,18 +102,17 @@ export default function HomePage() {
             ))}
           </ul>
           <div className="flex items-center gap-3">
-            <Link href="/signin" className="hidden sm:inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-surface-300 rounded-lg hover:bg-surface-50 hover:text-ink transition-colors">Sign in</Link>
+            <Link 
+              href="/signin" 
+              className="hidden sm:inline-flex items-center justify-center px-6 py-2.5 text-sm font-bold text-white bg-brand-600 rounded-xl shadow-lg shadow-brand-200/50 hover:bg-brand-700 hover:shadow-xl hover:shadow-brand-300/50 hover:-translate-y-0.5 transition-all duration-300 active:scale-95"
+            >
+              Sign in
+            </Link>
             <Link 
               href="/signin" 
               className="sm:hidden inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 rounded-lg shadow-sm hover:bg-brand-700 transition-all active:scale-95"
             >
               Sign in
-            </Link>
-            <Link 
-              href="/signup" 
-              className="hidden sm:inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 rounded-lg shadow-sm hover:bg-brand-700 hover:shadow-md transition-all hover:-translate-y-0.5"
-            >
-              Get started &rarr;
             </Link>
           </div>
         </div>
@@ -134,7 +133,7 @@ export default function HomePage() {
                 Manage <em className="not-italic text-brand-600">profiles</em>, documents,<br className="hidden md:block" /> and achievements.
               </h1>
               <p className="text-lg md:text-xl text-slate-600 leading-relaxed mb-10 max-w-xl">
-                A centralized portal for Vignan&apos;s Deemed to be University to maintain student records, collect supporting documents, track achievements, and support fast approval workflows from one place.
+                A centralized portal for Vignan&apos;s Deemed to be University to maintain student records, collect supporting documents, track achievements, and manage institutional data in one place.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-surface-200">
                 {heroBenefits.map((item) => (
@@ -221,7 +220,7 @@ export default function HomePage() {
               </h2>
             </div>
             <p className="text-lg text-slate-600 max-w-md">
-              From onboarding to graduation, the platform keeps profile data, approvals, uploaded proofs, and achievement history ready for day-to-day operations.
+              From onboarding to graduation, the platform keeps profile data, verified files, uploaded proofs, and achievement history ready for day-to-day operations.
             </p>
           </div>
 
@@ -291,7 +290,7 @@ export default function HomePage() {
                 Built for <em className="not-italic text-brand-600">institutional visibility</em>, compliance, and student growth.
               </h2>
               <p className="text-lg text-slate-600 leading-relaxed mb-8">
-                This project gives Vignan a single place to manage student academic profiles, supporting documents, achievements, approvals, and report-ready evidence.
+                This project gives Vignan a single place to manage student academic profiles, supporting documents, achievements, and report-ready evidence.
               </p>
               
               <div className="flex flex-wrap gap-3 mb-10">
@@ -304,7 +303,7 @@ export default function HomePage() {
 
               <div className="p-6 bg-white border-l-4 border-brand-500 rounded-r-2xl shadow-sm border-y border-surface-200">
                 <p className="font-display text-xl leading-relaxed text-ink italic mb-4">
-                  "The portal brings profiles, documents, achievements, and approvals together so academic teams can act faster with confidence."
+                  "The portal brings profiles, documents, achievements, and records together so academic teams can act faster with confidence."
                 </p>
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
                   Academic Affairs Office - Vignan&apos;s Deemed to be University
@@ -321,7 +320,7 @@ export default function HomePage() {
               {[
                 { icon: "📄", title: "Document repository", body: "Keep student proofs and official uploads organized for quick retrieval and review." },
                 { icon: "🏆", title: "Achievement tracking",  body: "Monitor competitions, internships, workshops, and academic milestones in a structured format." },
-                { icon: "📊", title: "Admin reporting",    body: "Support reviews with searchable records, approval status, and export-friendly summaries." },
+                { icon: "📊", title: "Admin reporting",    body: "Support reviews with searchable records, verification status, and export-friendly summaries." },
               ].map((t) => (
                 <div key={t.title} className="p-6 bg-white border border-surface-200 rounded-2xl shadow-sm hover:border-surface-300 transition-colors">
                   <div className="text-2xl mb-4">{t.icon}</div>
@@ -350,15 +349,15 @@ export default function HomePage() {
                   Ready to manage student records in one Vignan platform?
                 </h2>
                 <p className="text-brand-100 text-lg md:text-xl max-w-xl leading-relaxed">
-                  Launch profile onboarding, document uploads, achievement submission, and approval tracking in one connected system.
+                  Launch profile onboarding, document uploads, achievement submission, and record management in one connected system.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row md:flex-col gap-4">
-                <Link href="/signup" className="inline-flex items-center justify-center px-8 py-4 text-brand-900 bg-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                  Create account &rarr;
-                </Link>
-                <Link href="/signin" className="inline-flex items-center justify-center px-8 py-4 text-white bg-white/10 hover:bg-white/20 font-bold rounded-xl backdrop-blur-sm transition-all duration-300">
-                  Sign in
+                <Link 
+                  href="/signin" 
+                  className="inline-flex items-center justify-center px-10 py-4 text-brand-900 bg-white font-bold rounded-2xl shadow-2xl hover:bg-brand-50 hover:-translate-y-1 hover:shadow-white/20 transition-all duration-300"
+                >
+                  Sign in to Dashboard &rarr;
                 </Link>
               </div>
             </div>

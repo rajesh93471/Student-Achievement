@@ -26,25 +26,7 @@ services:
       dockerfile: Dockerfile
     container_name: stuach-backend
     restart: always
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      PORT: ${BACKEND_PORT}
-      NODE_ENV: ${NODE_ENV}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
-      CLIENT_URL: http://localhost:${FRONTEND_PORT}
-      AWS_REGION: ${AWS_REGION}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
-      STORAGE_MODE: ${STORAGE_MODE}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
-      SMTP_FROM_NAME: ${SMTP_FROM_NAME}
-      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL}
+    env_file: .env
     depends_on:
       db:
         condition: service_healthy
@@ -58,16 +40,14 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: https://160.187.169.41/achieve/api
+        NEXT_PUBLIC_API_URL: http://localhost:${BACKEND_PORT}/achieve
     container_name: stuach-frontend
     restart: always
-    environment:
-      NODE_ENV: ${NODE_ENV}
-      PORT: ${FRONTEND_PORT}
+    env_file: .env
     depends_on:
       - backend
     ports:
-      - "${FRONTEND_PORT}:80"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
 
 volumes:
   mysql_data:

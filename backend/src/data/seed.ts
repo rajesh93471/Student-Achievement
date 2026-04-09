@@ -11,7 +11,7 @@ const seed = async () => {
   await prisma.notification.deleteMany();
   await prisma.document.deleteMany();
   await prisma.achievement.deleteMany();
-  await prisma.facultyProfile.deleteMany();
+  await prisma.achievement.deleteMany();
   await prisma.student.deleteMany();
   await prisma.department.deleteMany();
   await prisma.user.deleteMany();
@@ -34,23 +34,6 @@ const seed = async () => {
     },
   });
 
-  const faculty = await prisma.user.create({
-    data: {
-      name: 'Prof. Meera Iyer',
-      email: 'faculty@stuach.edu',
-      password: await bcrypt.hash('Faculty@123', 10),
-      role: 'faculty',
-      department: 'Computer Science',
-    },
-  });
-
-  await prisma.facultyProfile.create({
-    data: {
-      userId: faculty.id,
-      department: 'Computer Science',
-      designation: 'Associate Professor',
-    },
-  });
 
   for (const item of sampleStudents as any[]) {
     const user = await prisma.user.create({
@@ -94,7 +77,6 @@ const seed = async () => {
 
   console.log('Seed completed', {
     admin: admin.email,
-    faculty: faculty.email,
     studentPassword: 'Student@123',
   });
 };

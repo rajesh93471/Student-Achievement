@@ -13,10 +13,10 @@ import { BarChart3, TrendingUp, Users, Award, FileCheck, Filter, ChevronDown } f
 import { Select } from "@/components/ui/select";
 
 const ACADEMIC_YEAR_OPTIONS = [
-  { value: "Year 1", label: "I" },
-  { value: "Year 2", label: "II" },
-  { value: "Year 3", label: "III" },
-  { value: "Year 4", label: "IV" },
+  { value: "Year 1", label: "Year I" },
+  { value: "Year 2", label: "Year II" },
+  { value: "Year 3", label: "Year III" },
+  { value: "Year 4", label: "Year IV" },
 ];
 
 export default function AdminDashboardPage() {

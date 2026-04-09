@@ -4,6 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies
+# Using npm ci for faster and reproducible builds if possible
 COPY package*.json ./
 RUN npm install
 
@@ -11,27 +12,37 @@ RUN npm install
 COPY . .
 
 # Build the Next.js application
-# NEXT_PUBLIC_API_URL must be available at build time for static export
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
 # --- Runtime Stage ---
-FROM nginx:alpine AS runner
+FROM node:20-alpine AS runner
 
-# Remove default nginx static assets
-RUN rm -rf /usr/share/nginx/html/*
+WORKDIR /app
 
-# Copy the static export results from build stage
-# With basePath: "/achieve", files are in the out directory
-COPY --from=builder /app/out /usr/share/nginx/html
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy our custom Nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Create a non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Expose the frontend port (Nginx defaults to 80)
-EXPOSE 80
+# Copy necessary files from builder
+# We only need the standalone build, public, and static assets
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-# Nginx starts automatically by default in the image
-CMD ["nginx", "-g", "daemon off;"]
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+# set hostname to localhost
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["npm", "start"]

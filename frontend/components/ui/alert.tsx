@@ -27,9 +27,11 @@ const TONE_STYLES = {
 export function Alert({
   tone = "info",
   children,
+  onClose,
 }: {
   tone?: "info" | "success" | "error";
   children: React.ReactNode;
+  onClose?: () => void;
 }) {
   const s = TONE_STYLES[tone];
 
@@ -47,6 +49,7 @@ export function Alert({
       color: s.color,
       letterSpacing: "0.02em",
       lineHeight: 1.65,
+      position: "relative",
     }}>
       {/* Left accent bar */}
       <div style={{
@@ -69,7 +72,31 @@ export function Alert({
       </span>
 
       {/* Content */}
-      <span style={{ flex: 1 }}>{children}</span>
+      <span style={{ flex: 1, paddingRight: onClose ? 24 : 0 }}>{children}</span>
+
+      {/* Close button */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            background: "none",
+            border: "none",
+            color: s.color,
+            cursor: "pointer",
+            fontSize: 14,
+            padding: 4,
+            opacity: 0.6,
+            transition: "opacity 0.2s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
+        >
+          ✕
+        </button>
+      )}
     </div>
   );
 }

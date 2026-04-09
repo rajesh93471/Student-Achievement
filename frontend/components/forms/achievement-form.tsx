@@ -21,10 +21,10 @@ const DEFAULT_ACHIEVEMENT_DATE = new Date().toISOString().slice(0, 10);
 const ACHIEVEMENT_STREAMS = ["technical", "non-technical"] as const;
 const ORGANIZED_BY_OPTIONS = ["University", "NO / Outside Campus"] as const;
 const ACADEMIC_YEAR_OPTIONS = [
-  { value: "Year 1", label: "I" },
-  { value: "Year 2", label: "II" },
-  { value: "Year 3", label: "III" },
-  { value: "Year 4", label: "IV" },
+  { value: "Year 1", label: "Year I" },
+  { value: "Year 2", label: "Year II" },
+  { value: "Year 3", label: "Year III" },
+  { value: "Year 4", label: "Year IV" },
 ] as const;
 const POSITION_OPTIONS = [
   "Winner",

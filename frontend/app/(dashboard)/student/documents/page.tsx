@@ -136,7 +136,7 @@ export default function StudentDocumentsPage() {
                 const uploaded = await uploadStudentFile({
                   file,
                   token,
-                  apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api",
+                  apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/achieve",
                 });
                 await createMutation.mutateAsync({
                   title:    formData.get("title"),

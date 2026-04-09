@@ -4,6 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+import * as ExcelJS from 'exceljs';
 import { Response } from 'express';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import {
@@ -280,6 +281,30 @@ export class AdminService {
       this.prisma.student.delete({ where: { id: student.id } }),
     ]);
     return { message: 'Student removed' };
+  }
+
+  async bulkDeleteStudents(ids: string[]) {
+    if (!Array.isArray(ids) || ids.length === 0) return { deleted: 0 };
+    
+    // Perform deletion in chunks or sequentially for safety
+    let count = 0;
+    for (const id of ids) {
+      try {
+        const student = await this.prisma.student.findUnique({ where: { id } });
+        if (!student) continue;
+        
+        await Promise.all([
+          this.prisma.user.delete({ where: { id: student.userId } }),
+          this.prisma.achievement.deleteMany({ where: { studentId: id } }),
+          this.prisma.document.deleteMany({ where: { studentId: id } }),
+          this.prisma.student.delete({ where: { id } })
+        ]);
+        count++;
+      } catch (err) {
+        console.error(`Failed to delete student ${id}:`, err);
+      }
+    }
+    return { deleted: count };
   }
 
   async getDashboard() {
@@ -814,6 +839,7 @@ export class AdminService {
           { header: 'Student ID', key: 'studentId', width: 18 },
           { header: 'Name', key: 'fullName', width: 24 },
           { header: 'Department', key: 'department', width: 20 },
+          { header: 'Graduation Year', key: 'graduationYear', width: 16 },
           { header: 'CGPA', key: 'cgpa', width: 10 },
           { header: 'Achievements', key: 'achievementsCount', width: 14 },
         ],
@@ -844,16 +870,12 @@ export class AdminService {
   }
 
   async getMeta() {
-    const [departments, admins, faculty, graduationYearsRaw] =
+    const [departments, admins, graduationYearsRaw] =
       await Promise.all([
         this.prisma.department.findMany({ orderBy: { name: 'asc' } }),
         this.prisma.user.findMany({
           where: { role: 'admin' },
           select: { name: true, email: true },
-        }),
-        this.prisma.user.findMany({
-          where: { role: 'faculty' },
-          select: { name: true, email: true, department: true },
         }),
         this.prisma.student.findMany({
           select: { graduationYear: true },
@@ -866,6 +888,205 @@ export class AdminService {
       .filter((y) => y !== null)
       .sort((a, b) => b - a);
 
-    return { departments, admins, faculty, graduationYears };
+    return { departments, admins, graduationYears };
+  }
+
+  async bulkUpdateFromExcel(file: Express.Multer.File, mode?: string) {
+    if (!file) throw new ConflictException('No file uploaded');
+
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer as any);
+    const worksheet = workbook.getWorksheet(1);
+    if (!worksheet) throw new ConflictException('Empty Excel sheet');
+
+    const results = { success: 0, failed: 0, errors: [] as string[] };
+    const rows: any[] = [];
+
+    // Map headers to field names
+    const headerRow = worksheet.getRow(1);
+    const headers: Record<number, string> = {};
+    headerRow.eachCell((cell, colNumber) => {
+      let val = cell.value;
+      // Handle Excel objects (formulas, rich text, etc.)
+      if (val && typeof val === 'object') {
+        if ('result' in val) val = val.result;
+        if (val && typeof val === 'object' && 'text' in val) val = val.text;
+      }
+      const valStr = String(val || '').trim().toLowerCase();
+      if (!valStr) return;
+
+      if (valStr.includes('studentid') || valStr.includes('reg') || valStr.includes('registration') || valStr === 'id') {
+        headers[colNumber] = 'studentId';
+      } else if (valStr.includes('name') || valStr.includes('full')) {
+        headers[colNumber] = 'fullName';
+      } else if (valStr.includes('email') || valStr.includes('mail')) {
+        headers[colNumber] = 'email';
+      } else if (valStr.includes('dept') || valStr.includes('depart') || valStr.includes('branch') || valStr.includes('stream')) {
+        headers[colNumber] = 'department';
+      } else if (valStr.includes('prog') || valStr.includes('course')) {
+        headers[colNumber] = 'program';
+      } else if (valStr.includes('grad')) {
+        headers[colNumber] = 'graduationYear';
+      } else if (valStr.includes('year')) {
+        headers[colNumber] = 'year';
+      } else if (valStr.includes('sem')) {
+        headers[colNumber] = 'semester';
+      } else if (valStr.includes('cgpa') || valStr.includes('gpa')) {
+        headers[colNumber] = 'cgpa';
+      } else if (valStr.includes('phone') || valStr.includes('mobile') || valStr.includes('contact')) {
+        headers[colNumber] = 'phone';
+      } else if (valStr.includes('pass')) {
+        headers[colNumber] = 'password';
+      }
+    });
+
+    // Valid studentId is mandatory
+    if (!Object.values(headers).includes('studentId')) {
+      throw new ConflictException('Excel missing mandatory "studentId" column');
+    }
+
+    // Process data rows
+    const headerEntries = Object.entries(headers);
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // Skip headers
+
+      const rowData: any = {};
+      headerEntries.forEach(([col, field]) => {
+        const cell = row.getCell(Number(col));
+        let val = cell.value;
+        
+        // Handle Excel objects (formulas, hyperlinks, rich text)
+        if (val && typeof val === 'object') {
+          if ('result' in val) val = val.result;
+          if (val && typeof val === 'object' && 'text' in val) val = val.text;
+        }
+        
+        rowData[field] = val;
+      });
+
+      if (rowData.studentId) rows.push(rowData);
+    });
+
+    const parseYearAndSem = (val: any) => {
+      if (val === undefined || val === null) return 0;
+      const s = String(val).trim().toUpperCase();
+      if (s === 'I') return 1;
+      if (s === 'II') return 2;
+      if (s === 'III') return 3;
+      if (s === 'IV') return 4;
+      const n = Number(s);
+      return isNaN(n) ? 0 : n;
+    };
+
+    for (const data of rows) {
+      try {
+        const studentId = String(data.studentId).trim().toUpperCase();
+        
+        const existing = await this.prisma.student.findUnique({
+          where: { studentId },
+          include: { user: true },
+        });
+
+        if (existing) {
+          if (mode === 'enroll') {
+            results.failed++;
+            results.errors.push(`Row for ${studentId} skipped: Student already exists. Enroll mode only allows new records.`);
+            continue;
+          }
+          // Update Existing
+          const studentUpdates: any = {};
+          if (data.fullName) studentUpdates.fullName = String(data.fullName).trim();
+          if (data.department) studentUpdates.department = String(data.department).trim();
+          if (data.program) studentUpdates.program = String(data.program).trim();
+          if (data.year) studentUpdates.year = parseYearAndSem(data.year);
+          if (data.semester) studentUpdates.semester = parseYearAndSem(data.semester);
+          if (data.cgpa && !isNaN(Number(data.cgpa))) studentUpdates.cgpa = Number(data.cgpa);
+          if (data.graduationYear && !isNaN(Number(data.graduationYear))) studentUpdates.graduationYear = Number(data.graduationYear);
+          if (data.email) studentUpdates.email = String(data.email).trim().toLowerCase();
+          if (data.phone) studentUpdates.phone = String(data.phone).trim();
+
+          await this.prisma.student.update({
+            where: { studentId },
+            data: studentUpdates,
+          });
+
+          // Sync User
+          const userUpdates: any = {};
+          if (data.fullName) userUpdates.name = studentUpdates.fullName;
+          if (data.email) userUpdates.email = studentUpdates.email;
+          if (data.department) userUpdates.department = studentUpdates.department;
+          if (data.password) userUpdates.password = await bcrypt.hash(String(data.password).trim(), 10);
+
+          await this.prisma.user.update({
+            where: { id: existing.userId },
+            data: userUpdates,
+          });
+
+          results.success++;
+        } else {
+          if (mode === 'update') {
+            results.failed++;
+            results.errors.push(`Row for ${studentId} skipped: Student record not found. Update mode only allows existing records.`);
+            continue;
+          }
+          // Create New if all required fields are present
+          const required = ['fullName', 'email', 'department', 'program'];
+          const missing: string[] = [];
+          
+          required.forEach(f => {
+            const val = data[f];
+            if (val === undefined || val === null || (typeof val === 'string' && val.trim() === '')) {
+              const headerExists = Object.values(headers).includes(f);
+              if (!headerExists) {
+                missing.push(`${f} column not found (Detected columns: ${Object.values(headers).join(', ')})`);
+              } else {
+                missing.push(f === 'fullName' ? 'name' : f);
+              }
+            }
+          });
+
+          if (missing.length > 0) {
+            results.failed++;
+            results.errors.push(`Row for ${data.studentId} missing: ${missing.join(', ')}`);
+            continue;
+          }
+
+          const password = data.password || 'ChangeMe123!';
+          const hashed = await bcrypt.hash(String(password).trim(), 10);
+          
+          const user = await this.prisma.user.create({
+            data: {
+              name: String(data.fullName).trim(),
+              email: String(data.email).trim().toLowerCase(),
+              password: hashed,
+              role: 'student',
+              department: String(data.department).trim(),
+            },
+          });
+
+          await this.prisma.student.create({
+            data: {
+              userId: user.id,
+              studentId,
+              fullName: String(data.fullName).trim(),
+              department: String(data.department).trim(),
+              program: String(data.program).trim(),
+              year: parseYearAndSem(data.year),
+              semester: parseYearAndSem(data.semester),
+              email: String(data.email).trim().toLowerCase(),
+              cgpa: data.cgpa && !isNaN(Number(data.cgpa)) ? Number(data.cgpa) : null,
+              graduationYear: data.graduationYear && !isNaN(Number(data.graduationYear)) ? Number(data.graduationYear) : null,
+            },
+          });
+          results.success++;
+        }
+      } catch (err: any) {
+        results.failed++;
+        results.errors.push(`Error at Student ${data.studentId}: ${err.message}`);
+      }
+    }
+
+    (results as any).identifiedHeaders = headers;
+    return results;
   }
 }

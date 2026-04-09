@@ -1,4 +1,4 @@
-export type Role = "student" | "admin" | "faculty";
+export type Role = "student" | "admin";
 
 export interface AuthUser {
   id: string;
@@ -61,3 +61,4 @@ export interface DocumentItem {
   createdAt?: string;
   updatedAt?: string;
 }
+

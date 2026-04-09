@@ -79,7 +79,8 @@ export function DashboardShell({
   const unreadCount = notifications.filter((n: any) => n.status === "unread").length;
 
   const profilePath =
-    user?.role === "admin"  ? "/admin/students" : "/student/profile";
+    user?.role === "admin"  ? "/admin/students" : 
+    "/student/profile";
 
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
@@ -127,11 +128,11 @@ export function DashboardShell({
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Brand Area */}
-        <div className="p-3 border-b border-surface-200 flex flex-col items-center justify-center shrink-0 min-h-[100px] gap-1.5">
-          <div className="w-[100px] bg-white rounded-lg flex items-center justify-center transition-all">
+        <div className="p-4 border-b border-surface-200 flex flex-col items-center justify-center shrink-0 min-h-[120px] gap-2 bg-gradient-to-b from-surface-50/50 to-white">
+          <div className="w-[150px] bg-white rounded-xl flex items-center justify-center transition-all">
              <UniversityWordmark className="w-full h-auto object-contain" />
           </div>
-          <p className="font-sans text-[7px] font-bold tracking-widest text-brand-600 uppercase text-center leading-tight px-2 opacity-70">VIGNAN&apos;S UNIVERSITY</p>
+          <p className="font-sans text-[9px] font-black tracking-[0.2em] text-brand-600 uppercase text-center leading-tight px-2 opacity-80">VIGNAN&apos;S UNIVERSITY</p>
         </div>
 
         {/* Sidebar Nav */}
@@ -146,7 +147,7 @@ export function DashboardShell({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "font-sans text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-all border flex items-center w-full uppercase tracking-tight",
+                  "font-sans text-[15px] font-semibold px-4 py-3 rounded-xl transition-all border flex items-center w-full uppercase tracking-tight",
                   isActive 
                     ? "bg-brand-50 text-brand-700 border-brand-100 shadow-sm" 
                     : "bg-transparent text-slate-500 border-transparent hover:bg-surface-50 hover:text-brand-600"
@@ -163,7 +164,7 @@ export function DashboardShell({
            <Link
               href="/settings"
               className={cn(
-                "font-sans text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-all border flex items-center gap-2 uppercase tracking-tight",
+                "font-sans text-[15px] font-semibold px-4 py-3 rounded-xl transition-all border flex items-center gap-2 uppercase tracking-tight",
                 pathname === "/settings" 
                   ? "bg-white text-brand-700 border-brand-100 shadow-sm" 
                   : "bg-transparent text-slate-500 border-transparent hover:bg-white hover:text-brand-600 hover:border-surface-200"
@@ -188,7 +189,7 @@ export function DashboardShell({
               >
                 <Menu size={20} />
               </button>
-              <h1 className="font-display font-bold text-base sm:text-lg text-ink leading-tight truncate">{title}</h1>
+              <h1 className="font-display font-bold text-lg sm:text-xl text-ink leading-tight truncate">{title}</h1>
             </div>
 
             {/* Actions */}
@@ -255,7 +256,8 @@ export function DashboardShell({
               <button
                 className="flex items-center gap-2 px-3 py-1.5 bg-surface-50 border border-surface-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-white hover:border-surface-300 transition-colors max-w-[140px] truncate"
                 type="button"
-                onClick={() => router.push(profilePath)}
+                onClick={() => router.push("/settings")}
+                title="Account Settings"
               >
                 <UserCircle2 size={16} className="text-brand-500 shrink-0" />
                 <span className="truncate hidden sm:inline">{user?.name || "User"}</span>
@@ -279,7 +281,7 @@ export function DashboardShell({
           {/* Subtitle bar */}
           <div className="bg-white border-b border-surface-100 px-4 sm:px-6 lg:px-8 py-1.5 flex items-center gap-2">
             <div className="w-0.5 h-2.5 rounded-full bg-accent-500 shrink-0"></div>
-            <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-tight truncate">{subtitle}</p>
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-widest truncate">{subtitle}</p>
           </div>
         </header>
 

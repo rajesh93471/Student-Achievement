@@ -14,9 +14,6 @@ export class StudentsService {
     if (user.role === 'student') {
       return { userId: user.id };
     }
-    if (user.role === 'faculty') {
-      return { department: user.department };
-    }
     return {};
   }
 
@@ -139,9 +136,6 @@ export class StudentsService {
     if (!student) throw new NotFoundException('Student not found');
 
     if (user.role === 'student' && String(student.userId) !== String(user.id)) {
-      throw new ForbiddenException('Forbidden');
-    }
-    if (user.role === 'faculty' && student.department !== user.department) {
       throw new ForbiddenException('Forbidden');
     }
 

@@ -33,9 +33,6 @@ export class AchievementsService {
       if (!student) throw new NotFoundException('Student profile not found');
       criteria.studentId = student.id;
     }
-    if (user.role === 'faculty') {
-      criteria.student = { department: user.department };
-    }
     if (user.role === 'admin' && query.department) {
       criteria.student = { department: query.department };
     }

@@ -8,7 +8,6 @@ import { StudentsModule } from './modules/students/students.module';
 import { AchievementsModule } from './modules/achievements/achievements.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { AdminModule } from './modules/admin/admin.module';
-import { FacultyModule } from './modules/faculty/faculty.module';
 import { UsersModule } from './modules/users/users.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ChatbotModule } from './modules/chatbot/chatbot.module';
@@ -20,7 +19,7 @@ import { join } from 'path';
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/achieve/api/uploads',
+      serveRoot: '/achieve/uploads',
     }),
     PrismaModule,
     AuthModule,
@@ -28,7 +27,6 @@ import { join } from 'path';
     AchievementsModule,
     DocumentsModule,
     AdminModule,
-    FacultyModule,
     UsersModule,
     NotificationsModule,
     ChatbotModule,

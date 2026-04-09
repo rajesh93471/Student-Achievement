@@ -11,15 +11,16 @@ import { UniversityWordmark } from "@/components/layout/university-wordmark";
 import { AuthUser } from "@/lib/types";
 
 type SignUpValues = {
+  role: "student";
   name: string;
   email: string;
   password: string;
   studentId: string;
-  department: string;
-  program: string;
-  year: number;
-  semester: number;
-  graduationYear: number;
+  department?: string;
+  program?: string;
+  year?: number;
+  semester?: number;
+  graduationYear?: number;
   phone?: string;
   admissionCategory?: string;
 };
@@ -28,10 +29,10 @@ export default function SignUpPage() {
   const router = useRouter();
   const { setSession } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  const [showStudentPassword, setShowStudentPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const graduationYears = Array.from({ length: 10 }, (_, index) => new Date().getFullYear() + index);
   const { register, handleSubmit } = useForm<SignUpValues>({
-    defaultValues: { year: 1, semester: 1, graduationYear: new Date().getFullYear() + 3 },
+    defaultValues: { role: "student", year: 1, semester: 1, graduationYear: new Date().getFullYear() + 3 },
   });
 
   const onSubmit = async (values: SignUpValues) => {
@@ -294,7 +295,7 @@ export default function SignUpPage() {
                   <div className="su-password-wrap">
                     <input
                       className="su-input"
-                      type={showStudentPassword ? "text" : "password"}
+                      type={showPassword ? "text" : "password"}
                       placeholder="Create a strong password"
                       style={{ paddingRight: 50 }}
                       {...register("password", { required: true })}
@@ -302,11 +303,11 @@ export default function SignUpPage() {
                     <button
                       type="button"
                       className="su-password-toggle"
-                      aria-label={showStudentPassword ? "Hide password" : "Show password"}
-                      aria-pressed={showStudentPassword}
-                      onClick={() => setShowStudentPassword((current) => !current)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-pressed={showPassword}
+                      onClick={() => setShowPassword((current) => !current)}
                     >
-                      {showStudentPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+                      {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
                     </button>
                   </div>
                 </div>
@@ -314,6 +315,7 @@ export default function SignUpPage() {
                   <label className="su-label">Registration number</label>
                   <input className="su-input" placeholder="e.g. 231FA04023" {...register("studentId", { required: true })} />
                 </div>
+
                 <div className="su-field">
                   <label className="su-label">Department</label>
                   <input className="su-input" placeholder="e.g. CSE" {...register("department", { required: true })} />
@@ -356,13 +358,16 @@ export default function SignUpPage() {
                     ))}
                   </select>
                 </div>
+
                 <div className="su-field su-col-2">
                   <label className="su-label">Phone number</label>
                   <input className="su-input" placeholder="e.g. 9876543210" {...register("phone")} />
                 </div>
               </div>
               {error ? <p className="su-error">{error}</p> : null}
-              <button className="su-submit" type="submit">Create student account →</button>
+              <button className="su-submit" type="submit">
+                Create student account →
+              </button>
             </form>
           </div>
 
