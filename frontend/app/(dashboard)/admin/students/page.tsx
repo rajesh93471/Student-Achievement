@@ -591,7 +591,7 @@ export default function AdminStudentsPage() {
                              <div key={a._id} className="p-4 border border-surface-100 rounded-2xl bg-surface-50 shadow-sm flex items-center justify-between">
                                 <div>
                                   <div className="text-sm font-bold text-ink line-clamp-1">{a.title}</div>
-                                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-1">{a.category} &bull; {a.academicYear.replace(/Year \d/i, (m: string) => `Year ${romanYears[Number(m.split(' ')[1])] || m.split(' ')[1]}`)}</div>
+                                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-1">{a.category} &bull; {a.academicYear ? a.academicYear.replace(/Year \d/i, (m: string) => `Year ${romanYears[Number(m.split(' ')[1])] || m.split(' ')[1]}`) : "N/A"}</div>
                                 </div>
                                 {a.certificateUrl && (
                                   <button onClick={() => window.open(a.certificateUrl, "_blank")} className="p-2 text-brand-600 hover:bg-white rounded-lg transition-colors">
