@@ -12,6 +12,16 @@ const nextConfig = {
     unoptimized: true,
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/achieve",
+        basePath: false,
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
