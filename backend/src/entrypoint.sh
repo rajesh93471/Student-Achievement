@@ -3,9 +3,9 @@
 # Exit on error
 set -e
 
-echo "Running Prisma Migrations..."
-# npx prisma migrate deploy applies any pending migrations to the production DB
-npx prisma migrate deploy
+echo "Forcing Database Schema Sync..."
+# npx prisma db push forces the DB to match the schema.prisma
+npx prisma db push --accept-data-loss
 
 if [ "$SEED_DATABASE" = "true" ]; then
   echo "Seeding Database..."
