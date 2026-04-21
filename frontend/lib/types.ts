@@ -1,4 +1,4 @@
-export type Role = "student" | "admin";
+export type Role = "student" | "faculty" | "admin";
 
 export interface AuthUser {
   id: string;
@@ -7,6 +7,7 @@ export interface AuthUser {
   role: Role;
   department?: string;
   studentId?: string;
+  employeeId?: string;
 }
 
 export interface StudentProfile {
@@ -29,6 +30,14 @@ export interface StudentProfile {
   backlogs: number;
   achievementsCount: number;
   documentsCount: number;
+  assignment?: {
+    faculty: {
+      fullName: string;
+      email: string;
+      employeeId: string;
+      department: string;
+    };
+  };
 }
 
 export interface Achievement {
@@ -61,4 +70,3 @@ export interface DocumentItem {
   createdAt?: string;
   updatedAt?: string;
 }
-

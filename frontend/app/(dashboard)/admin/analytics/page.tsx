@@ -1,9 +1,14 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
+
 import { useState } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { DepartmentBarChart, GrowthLineChart } from "@/components/charts/overview-chart";
+
+const DepartmentBarChart = dynamic(() => import("@/components/charts/overview-chart").then(mod => mod.DepartmentBarChart), { ssr: false });
+const GrowthLineChart = dynamic(() => import("@/components/charts/overview-chart").then(mod => mod.GrowthLineChart), { ssr: false });
+
 import { useAuth } from "@/components/layout/providers";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -43,7 +48,9 @@ export default function AnalyticsPage() {
       nav={[
         { label: "Overview", href: "/admin" },
         { label: "Students", href: "/admin/students" },
+        { label: "Faculty Management", href: "/admin/faculty" },
         { label: "Student achievements", href: "/admin/student-achievements" },
+        { label: "Student documents", href: "/admin/student-documents" },
         { label: "Analytics", href: "/admin/analytics" },
         { label: "Reports", href: "/admin/reports" },
       ]}

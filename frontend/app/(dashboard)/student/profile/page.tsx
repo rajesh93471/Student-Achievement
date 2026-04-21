@@ -39,6 +39,7 @@ const SECTIONS = [
       { label: "Grad Year",          key: "graduationYear",    span: "col-span-6 md:col-span-4" },
       { label: "CGPA",               key: "cgpa",              span: "col-span-6 md:col-span-4" },
       { label: "Backlogs",           key: "backlogs",          span: "col-span-6 md:col-span-4" },
+      { label: "Counsellor",         key: "counsellorName",    span: "col-span-12" },
     ],
   },
 ];
@@ -80,7 +81,7 @@ function ProfileField({
 
 /* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function StudentProfilePage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const queryClient = useQueryClient();
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
@@ -92,9 +93,9 @@ export default function StudentProfilePage() {
   const [editStatus, setEditStatus] = useState("");
 
   const { data } = useQuery({
-    queryKey: ["student-profile"],
+    queryKey: ["student-profile", user?.id],
     queryFn: () => api<{ student: StudentProfile }>("/students/me", { token }),
-    enabled: !!token,
+    enabled: !!token && !!user?.id,
   });
 
   const student = data?.student;
@@ -195,7 +196,13 @@ export default function StudentProfilePage() {
                   <ProfileField
                     key={field.key}
                     label={field.label}
-                    value={field.key === "year" ? (romanYears[(student as any)[field.key]] || (student as any)[field.key]) : (student as any)[field.key]}
+                    value={
+                      field.key === "year" 
+                        ? (romanYears[(student as any)[field.key]] || (student as any)[field.key]) 
+                        : field.key === "counsellorName"
+                          ? (student as any).assignment?.faculty?.fullName || "Not Assigned"
+                          : (student as any)[field.key]
+                    }
                     span={field.span}
                     delay={si * 80 + fi * 40}
                   />

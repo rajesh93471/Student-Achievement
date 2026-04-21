@@ -82,12 +82,12 @@ function SnapField({ label, value }: { label: string; value?: string | null }) {
 
 /* ─── Page ───────────────────────────────────────────────────────────────── */
 export default function StudentDashboardPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { data } = useQuery({
-    queryKey: ["student-profile"],
+    queryKey: ["student-profile", user?.id],
     queryFn: () =>
       api<{ student: any; achievements: any[]; documents: any[] }>("/students/me", { token }),
-    enabled: !!token,
+    enabled: !!token && !!user?.id,
   });
 
   const student      = data?.student;

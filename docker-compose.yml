@@ -40,10 +40,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: http://localhost:${BACKEND_PORT}/achieve
+        NEXT_PUBLIC_API_URL: /achieve/api
     container_name: stuach-frontend
     restart: always
     env_file: .env
+    environment:
+      API_PROXY_URL: http://backend:${BACKEND_PORT}/achieve
     depends_on:
       - backend
     ports:

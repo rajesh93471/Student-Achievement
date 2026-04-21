@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { UniversityWordmark } from "@/components/layout/university-wordmark";
 
 const stats = [
-  { value: "2 Roles", label: "Student, Admin", sub: "role-based access and dashboards" },
-  { value: "1 Portal", label: "Profiles and Documents", sub: "single source of student records" },
-  { value: "Track", label: "Achievements & Milestones", sub: "structured evidence by year and type" },
-  { value: "Export", label: "Reports and Analytics", sub: "accreditation-ready summaries" },
+  { value: "3 Roles", label: "Student, Faculty, Admin", sub: "separate dashboards for each workflow" },
+  { value: "1 Portal", label: "Profiles, Docs, Achievements", sub: "single source of academic records" },
+  { value: "Track", label: "Assigned Students and Streams", sub: "technical and non-technical achievement records" },
+  { value: "Export", label: "Analytics and Reports", sub: "PDF and Excel-ready summaries" },
 ];
 
 const features = [
@@ -20,20 +20,20 @@ const features = [
   {
     icon: "DV",
     accent: "text-brand-600 bg-brand-50 border-brand-200",
-    title: "Document Verification Vault",
-    body: "Store mark sheets, IDs, supporting documents, and uploaded proofs with organized access for students and administrators.",
+    title: "Student Documents Hub",
+    body: "Store mark sheets, Aadhaar, PAN, certificates, and supporting documents with structured access for students, faculty, and admin teams.",
   },
   {
     icon: "AR",
     accent: "text-teal-700 bg-teal-50 border-teal-200",
     title: "Achievement Repository",
-    body: "Capture internships, hackathons, workshops, sports, cultural events, publications, and competitions with clear classification.",
+    body: "Capture technical and non-technical achievements including hackathons, internships, certifications, sports, clubs, literary events, and entrepreneurship.",
   },
   {
     icon: "RP",
     accent: "text-accent-600 bg-accent-50 border-accent-200",
-    title: "Analytics and Reports",
-    body: "Give admins quick views of top achievers, department activity, verify entries, and downloadable evidence for reviews.",
+    title: "Faculty and Admin Analytics",
+    body: "Give faculty and admins quick views of assigned students, category-wise achievements, document activity, top performers, and export-ready reports.",
   },
 ];
 
@@ -42,32 +42,32 @@ const workflows = [
     step: "01",
     accent: "bg-accent-500",
     title: "Profile Setup",
-    body: "Students create their academic profile with registration number, branch, year, semester, and contact details.",
+    body: "Students create and maintain their academic profile with registration number, department, program, semester, graduation year, and contact details.",
   },
   {
     step: "02",
     accent: "bg-brand-500",
-    title: "Upload Proof and Achievements",
-    body: "Students add verified documents and achievement entries with category, year, semester, and supporting files.",
+    title: "Upload Documents and Achievements",
+    body: "Students add supporting documents and achievement entries with stream, category, academic year, semester, and certificate files.",
   },
   {
     step: "03",
     accent: "bg-emerald-500",
-    title: "Verify and Report",
-    body: "Institutional teams verify submissions, maintain student records, and generate reports for analysis and accreditation.",
+    title: "Monitor and Report",
+    body: "Faculty monitors assigned students while admins manage institution-wide records, analytics dashboards, and downloadable PDF or Excel reports.",
   },
 ];
 
 const students = [
-  { name: "Likitha R.", dept: "CSE - 3rd Year", badge: "4 Docs Verified", badgeColor: "text-teal-700 bg-teal-50 border-teal-200", bg: "bg-brand-900" },
-  { name: "Sai Charan", dept: "ECE - 2nd Year", badge: "2 Achievements Added", badgeColor: "text-brand-600 bg-brand-50 border-brand-200", bg: "bg-slate-900" },
-  { name: "Harshini M.", dept: "MBA - 1st Year", badge: "National Finalist", badgeColor: "text-indigo-600 bg-indigo-50 border-indigo-200", bg: "bg-indigo-700" },
+  { name: "Likitha R.", dept: "CSE - 3rd Year", badge: "4 Documents Uploaded", badgeColor: "text-teal-700 bg-teal-50 border-teal-200", bg: "bg-brand-900" },
+  { name: "Sai Charan", dept: "ECE - 2nd Year", badge: "2 Technical Achievements", badgeColor: "text-brand-600 bg-brand-50 border-brand-200", bg: "bg-slate-900" },
+  { name: "Harshini M.", dept: "MBA - 1st Year", badge: "Non-technical Finalist", badgeColor: "text-indigo-600 bg-indigo-50 border-indigo-200", bg: "bg-indigo-700" },
 ];
 
 const heroBenefits = [
-  { title: "Role-Based Access", body: "Separate student and admin views with focused actions." },
-  { title: "Document Verification", body: "Collect, review, and maintain proofs in one structured portal." },
-  { title: "Reports and Analytics", body: "Track milestones, achievements, and institutional summaries quickly." },
+  { title: "Role-Based Dashboards", body: "Dedicated workspaces for students, faculty mentors, and administrators." },
+  { title: "Structured Uploads", body: "Manage profiles, documents, and technical or non-technical achievements in one flow." },
+  { title: "Operational Visibility", body: "Track assigned students, institution-wide activity, and exportable summaries quickly." },
 ];
 
 export default function HomePage() {
@@ -127,13 +127,13 @@ export default function HomePage() {
             <div className="max-w-2xl animate-fade-up">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-50 border border-accent-200 text-accent-700 text-sm font-semibold tracking-wide mb-8">
                 <span className="w-2 h-2 rounded-full bg-accent-500 animate-pulse"></span>
-                Vignan Student Records Platform
+                Student, Faculty, and Admin Record Platform
               </div>
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-ink mb-6 text-balance">
-                Manage <em className="not-italic text-brand-600">profiles</em>, documents,<br className="hidden md:block" /> and achievements.
+                Manage <em className="not-italic text-brand-600">profiles</em>, documents,<br className="hidden md:block" /> achievements, and analytics.
               </h1>
               <p className="text-lg md:text-xl text-slate-600 leading-relaxed mb-10 max-w-xl">
-                A centralized portal for Vignan&apos;s Deemed to be University to maintain student records, collect supporting documents, track achievements, and manage institutional data in one place.
+                A centralized portal for Vignan&apos;s Deemed to be University to manage student profiles, assigned faculty views, uploaded documents, technical and non-technical achievements, and admin analytics in one place.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-surface-200">
                 {heroBenefits.map((item) => (
@@ -174,12 +174,12 @@ export default function HomePage() {
 
                 <div className="grid grid-cols-2 gap-4 mt-6">
                   <div className="p-5 rounded-2xl bg-surface-50 border border-surface-200">
-                    <div className="font-display text-4xl font-bold text-brand-600 mb-2">847</div>
-                    <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Student profiles</div>
+                    <div className="font-display text-4xl font-bold text-brand-600 mb-2">3</div>
+                    <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Portal roles</div>
                   </div>
                   <div className="p-5 rounded-2xl bg-surface-50 border border-surface-200">
-                    <div className="font-display text-4xl font-bold text-accent-500 mb-2">12.4k</div>
-                    <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Supporting files</div>
+                    <div className="font-display text-4xl font-bold text-accent-500 mb-2">PDF / XLS</div>
+                    <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Report exports</div>
                   </div>
                 </div>
               </div>

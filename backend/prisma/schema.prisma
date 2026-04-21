@@ -1,27 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id             String           @id @default(cuid())
-  name           String
-  email          String           @unique
-  password       String
-  role           String           @default("student")
-  department     String?
-  settings       Json?
-  isActive       Boolean          @default(true)
-  student        Student?
+  id                String             @id @default(cuid())
+  name              String
+  email             String             @unique
+  password          String
+  role              String             @default("student")
+  department        String?
+  settings          Json?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  student           Student?
+  faculty           Faculty?
+  achievements      Achievement[]      @relation("AchievementVerifiedBy")
+  notifications     Notification[]     @relation("NotificationSender")
   passwordResetOtps PasswordResetOtp[]
-  achievementsVerified Achievement[] @relation("AchievementVerifiedBy")
-  notifications  Notification[]   @relation("NotificationSender")
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
 }
 
 model Student {
@@ -31,11 +32,13 @@ model Student {
   studentId         String        @unique
   fullName          String
   department        String
+  section           String?
   program           String
   admissionCategory String?
   year              Int
   semester          Int
   graduationYear    Int?
+  counsellorId      String?
   email             String
   phone             String?
   address           String?
@@ -45,33 +48,63 @@ model Student {
   backlogs          Int           @default(0)
   achievementsCount Int           @default(0)
   documentsCount    Int           @default(0)
-  achievements      Achievement[]
-  documents         Document[]
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+  achievements      Achievement[]
+  assignment        Assignment?
+  documents         Document[]
 }
 
+model Faculty {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  employeeId  String       @unique
+  fullName    String
+  email       String       @unique
+  department  String
+  section     String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  assignments Assignment[]
+}
+
+model Assignment {
+  id        String   @id @default(cuid())
+  studentId String   @unique
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  facultyId String
+  faculty   Faculty  @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 model Achievement {
-  id                 String   @id @default(cuid())
-  studentId          String
-  student            Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  title              String
-  description        String   @db.Text
-  date               DateTime
-  academicYear       String?
-  semester           Int?
-  category           String
-  activityType       String?
-  organizedBy        String?
-  position           String?
-  certificateUrl     String?  @db.Text
-  certificateKey     String?  @db.Text
-  status             String   @default("approved")
-  verifiedById       String?
-  verifiedBy         User?    @relation("AchievementVerifiedBy", fields: [verifiedById], references: [id])
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id             String   @id @default(cuid())
+  studentId      String
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title          String
+  description    String   @db.Text
+  date           DateTime
+  academicYear   String?
+  semester       Int?
+  category       String
+  activityType   String?
+  organizedBy    String?
+  position       String?
+  certificateUrl String?  @db.Text
+  certificateKey String?  @db.Text
+  status         String   @default("approved")
+  facultyStatus  String?
+  facultyRemarks String?  @db.Text
+  verifiedById   String?
+  verifiedBy     User?    @relation("AchievementVerifiedBy", fields: [verifiedById], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([status])
+  @@index([category])
 }
 
 model Document {
@@ -86,44 +119,46 @@ model Document {
   size      Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+
 }
 
 model Notification {
-  id         String   @id @default(cuid())
-  senderId   String
-  sender     User     @relation("NotificationSender", fields: [senderId], references: [id], onDelete: Cascade)
-  senderName String?
+  id          String   @id @default(cuid())
+  senderId    String
+  sender      User     @relation("NotificationSender", fields: [senderId], references: [id], onDelete: Cascade)
+  senderName  String?
   senderEmail String?
-  senderRole String?
-  message    String
-  status     String   @default("unread")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  senderRole  String?
+  message     String
+  status      String   @default("unread")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Department {
-  id      String   @id @default(cuid())
-  name    String   @unique
-  code    String   @unique
-  hodName String?
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      String   @unique
+  hodName   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model PasswordResetOtp {
-  id                   String   @id @default(cuid())
-  userId               String
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  otpHash              String
-  resetTokenHash       String?
-  resetTokenExpiresAt  DateTime?
-  attempts             Int      @default(0)
-  expiresAt            DateTime
-  verifiedAt           DateTime?
-  consumedAt           DateTime?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                  String    @id @default(cuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otpHash             String
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+  attempts            Int       @default(0)
+  expiresAt           DateTime
+  verifiedAt          DateTime?
+  consumedAt          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@index([userId, createdAt])
 }
-

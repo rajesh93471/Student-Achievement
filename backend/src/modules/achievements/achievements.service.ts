@@ -49,6 +49,7 @@ export class AchievementsService {
             studentId: true,
             department: true,
             graduationYear: true,
+            section: true,
           },
         },
       },

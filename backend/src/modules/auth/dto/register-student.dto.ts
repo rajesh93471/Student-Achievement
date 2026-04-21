@@ -58,4 +58,8 @@ export class RegisterStudentDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  section?: string;
 }

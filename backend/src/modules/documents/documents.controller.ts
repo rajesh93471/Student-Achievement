@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -35,9 +36,9 @@ export class DocumentsController {
   }
 
   @Get()
-  @Roles('student')
-  listDocuments(@Req() req: any) {
-    return this.documentsService.listDocuments(req.user);
+  @Roles('student', 'admin')
+  listDocuments(@Req() req: any, @Query() query: any) {
+    return this.documentsService.listDocuments(req.user, query);
   }
 
   @Post()

@@ -56,7 +56,7 @@ function FileIcon({ mime }: { mime?: string }) {
 }
 
 export default function StudentDocumentsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<string>("");
   const [isDragging, setIsDragging] = useState(false);
@@ -64,9 +64,9 @@ export default function StudentDocumentsPage() {
   const formRef = useRef<HTMLFormElement>(null);
 
   const { data } = useQuery({
-    queryKey: ["documents"],
+    queryKey: ["documents", user?.id],
     queryFn: () => api<{ documents: any[] }>("/documents", { token }),
-    enabled: !!token,
+    enabled: !!token && !!user?.id,
   });
 
   const createMutation = useMutation({
@@ -136,7 +136,7 @@ export default function StudentDocumentsPage() {
                 const uploaded = await uploadStudentFile({
                   file,
                   token,
-                  apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/achieve",
+                  apiUrl: process.env.NEXT_PUBLIC_API_URL || "/achieve/api",
                 });
                 await createMutation.mutateAsync({
                   title:    formData.get("title"),

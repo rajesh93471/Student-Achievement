@@ -5,34 +5,54 @@ import { useState } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { useAuth } from "@/components/layout/providers";
 import { api } from "@/lib/api";
-import { FileText, FileSpreadsheet, Trophy, BookOpen, Layers, ShieldCheck } from "lucide-react";
+import { FileText, FileSpreadsheet, Trophy, BookOpen, Layers, ShieldCheck, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ReportsPage() {
   const { token } = useAuth();
   const [downloadState, setDownloadState] = useState<string>("");
   const [topLimit, setTopLimit] = useState<number>(10);
+  const [graduationYear, setGraduationYear] = useState<string>("all");
+
+  const { data: meta } = useQuery({
+    queryKey: ["admin-meta"],
+    queryFn: () => api<any>("/admin/meta", { token }),
+    enabled: !!token,
+  });
   
   const { data } = useQuery({
-    queryKey: ["admin-reports", topLimit],
-    queryFn: () => api<any>(`/admin/reports?limit=${encodeURIComponent(String(topLimit))}`, { token }),
+    queryKey: ["admin-reports", topLimit, graduationYear],
+    queryFn: () => {
+      const params = new URLSearchParams();
+      params.set("limit", String(topLimit));
+      if (graduationYear !== "all") params.set("year", graduationYear);
+      return api<any>(`/admin/reports?${params.toString()}`, { token });
+    },
     enabled: !!token,
   });
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/achieve";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/achieve/api";
 
   const downloadReport = async (format: "pdf" | "excel") => {
     if (!token) return;
     setDownloadState(`Preparing ${format.toUpperCase()} export...`);
     try {
+      const params = new URLSearchParams({
+        report: "top-achievers",
+        format,
+        limit: String(topLimit),
+      });
+      if (graduationYear !== "all") params.set("year", graduationYear);
+
       const response = await fetch(
-        `${apiUrl}/admin/reports/export?report=top-achievers&format=${format}&limit=${encodeURIComponent(
-          String(topLimit)
-        )}`,
+        `${apiUrl}/admin/reports/export?${params.toString()}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      if (!response.ok) {
+        throw new Error("Export failed");
+      }
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -53,7 +73,9 @@ export default function ReportsPage() {
       nav={[
         { label: "Overview", href: "/admin" },
         { label: "Students", href: "/admin/students" },
+        { label: "Faculty Management", href: "/admin/faculty" },
         { label: "Student achievements", href: "/admin/student-achievements" },
+        { label: "Student documents", href: "/admin/student-documents" },
         { label: "Analytics", href: "/admin/analytics" },
         { label: "Reports", href: "/admin/reports" },
       ]}
@@ -76,7 +98,22 @@ export default function ReportsPage() {
               <h3 className="font-sans text-[10px] font-semibold tracking-widest uppercase text-slate-400">Top performers</h3>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
+                <select
+                  className="bg-white border border-surface-200 rounded-lg pl-9 pr-8 py-1.5 text-xs font-semibold text-ink outline-none focus:ring-2 focus:ring-brand-100 transition-shadow appearance-none min-w-[150px]"
+                  value={graduationYear}
+                  onChange={(e) => setGraduationYear(e.target.value)}
+                >
+                  <option value="all">All Grad Years</option>
+                  {(meta?.graduationYears || []).map((year: number) => (
+                    <option key={year} value={String(year)}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Top</span>
               <input
                 className="w-16 bg-white border border-surface-200 rounded-lg px-2 py-1 text-xs font-semibold text-ink outline-none focus:ring-2 focus:ring-brand-100 transition-shadow"

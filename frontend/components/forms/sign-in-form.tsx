@@ -20,6 +20,7 @@ type LoginValues = {
 
 const ROLES: { value: Role; label: string; icon: string }[] = [
   { value: "student", label: "Student",  icon: "ST" },
+  { value: "faculty", label: "Faculty",  icon: "FA" },
   { value: "admin",   label: "Admin",    icon: "AD" },
 ];
 
@@ -58,6 +59,7 @@ export function SignInForm() {
       
       let redirectPath = "/student";
       if (roleToUse === "admin") redirectPath = "/admin";
+      if (roleToUse === "faculty") redirectPath = "/faculty";
 
       router.push(redirectPath);
     } catch (err) {
@@ -85,10 +87,15 @@ export function SignInForm() {
     onBlur:  () => setFocusedField(null),
   });
 
-  const identifierLabel = selectedRole === "student" ? "Registration number" : "Email";
+  const identifierLabel = 
+    selectedRole === "student" ? "Registration number" : 
+    selectedRole === "faculty" ? "Employee ID" : "Email";
+    
   const identifierPlaceholder =
-    selectedRole === "student" ? "e.g. 231FA04023" : "you@university.edu";
-  const identifierType = selectedRole === "student" ? "text" : "email";
+    selectedRole === "student" ? "e.g. 231FA04023" : 
+    selectedRole === "faculty" ? "e.g. EMP123" : "you@university.edu";
+    
+  const identifierType = selectedRole === "admin" ? "email" : "text";
 
   const requestOtpMutation = useMutation({
     mutationFn: (identifier: string) =>
@@ -301,7 +308,7 @@ export function SignInForm() {
             margin: 0, lineHeight: 1.7,
             letterSpacing: "0.02em",
           }}>
-            Students and admins can access their role-specific workspace here.
+            Students, faculty, and admins can access their role-specific workspace here.
           </p>
         </div>
 
@@ -449,16 +456,49 @@ export function SignInForm() {
         </form>
 
         <div style={{
-          marginTop: 12,
+          marginTop: 22,
+          padding: "12px 14px",
+          border: "1px solid #e2e8f0",
+          borderRadius: 12,
+          background: "#f8fafc",
+          display: "grid",
+          gap: 6,
+          justifyItems: "center",
           textAlign: "center",
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 10,
-          color: "#94a3b8",
-          letterSpacing: "0.05em",
-          textTransform: "uppercase",
-          fontWeight: 500,
         }}>
-          Developed by <span style={{ color: "#475569", fontWeight: 700 }}>Konda Rajesh</span>
+          <span style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 10,
+            color: "#94a3b8",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            fontWeight: 500,
+          }}>
+            Development Team
+          </span>
+          <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
+            columnGap: 12,
+            rowGap: 4,
+            maxWidth: 280,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: 12,
+            lineHeight: 1.6,
+            color: "#64748b",
+            fontWeight: 400,
+            letterSpacing: "0.01em",
+          }}>
+            {[
+              "Konda Rajesh",
+              "Althaf Baig",
+              "Chilukuri Ujwala",
+              "Katasani Geethanjali",
+            ].map((name) => (
+              <span key={name}>{name}</span>
+            ))}
+          </div>
         </div>
       </div>
 

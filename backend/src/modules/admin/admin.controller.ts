@@ -9,14 +9,17 @@ import {
   Query,
   Res,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UseInterceptors, UploadedFile } from '@nestjs/common';
 import type { Response } from 'express';
+import { CreateStudentDto } from './dto/create-student.dto';
+import { CreateFacultyDto } from './dto/create-faculty.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -50,7 +53,7 @@ export class AdminController {
   }
 
   @Post('students')
-  createStudent(@Body() body: any) {
+  createStudent(@Body() body: CreateStudentDto) {
     return this.adminService.createStudent(body);
   }
 
@@ -81,5 +84,54 @@ export class AdminController {
   @Post('students/bulk-delete')
   bulkDeleteStudents(@Body('ids') ids: string[]) {
     return this.adminService.bulkDeleteStudents(ids);
+  }
+
+  @Get('faculty')
+  listFaculty() {
+    return this.adminService.listFaculty();
+  }
+
+  @Post('faculty')
+  createFaculty(@Body() body: CreateFacultyDto) {
+    return this.adminService.createFaculty(body);
+  }
+
+  @Delete('faculty/:id')
+  deleteFaculty(@Param('id') id: string) {
+    return this.adminService.deleteFaculty(id);
+  }
+
+  @Put('faculty/:id')
+  updateFaculty(@Param('id') id: string, @Body() body: any) {
+    return this.adminService.updateFaculty(id, body);
+  }
+
+  @Post('faculty/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFaculty(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('mode') mode?: string,
+  ) {
+    return this.adminService.bulkUpdateFacultyFromExcel(file, mode);
+  }
+
+  @Post('faculty/bulk-delete')
+  bulkDeleteFaculty(@Body('ids') ids: string[]) {
+    return this.adminService.bulkDeleteFaculty(ids);
+  }
+
+  @Get('assignments')
+  getAssignments() {
+    return this.adminService.getAssignments();
+  }
+
+  @Put('assignments')
+  reassignStudent(@Body() body: { studentId: string; facultyId: string }) {
+    return this.adminService.reassignStudent(body.studentId, body.facultyId);
+  }
+
+  @Post('assignments/sync')
+  syncAssignments() {
+    return this.adminService.syncAllAssignments();
   }
 }

@@ -3,12 +3,19 @@ import {
   ForbiddenException,
   NotFoundException,
   Injectable,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { AdminService } from '../admin/admin.service';
 
 @Injectable()
 export class StudentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => AdminService))
+    private readonly adminService: AdminService,
+  ) {}
 
   private buildStudentQuery(user: any) {
     if (user.role === 'student') {
@@ -20,6 +27,13 @@ export class StudentsService {
   async getMyProfile(user: any) {
     const student = await this.prisma.student.findUnique({
       where: { userId: user.id },
+      include: {
+        assignment: {
+          include: {
+            faculty: true,
+          },
+        },
+      },
     });
     if (!student) throw new NotFoundException('Student profile not found');
 
@@ -93,6 +107,9 @@ export class StudentsService {
       });
     });
 
+    // Automatically re-assign if department changed
+    await this.adminService.autoAssignStudent(user.id);
+
     return { student: updatedStudent };
   }
 
@@ -132,7 +149,16 @@ export class StudentsService {
   }
 
   async getStudentById(user: any, id: string) {
-    const student = await this.prisma.student.findUnique({ where: { id } });
+    const student = await this.prisma.student.findUnique({
+      where: { id },
+      include: {
+        assignment: {
+          include: {
+            faculty: true,
+          },
+        },
+      },
+    });
     if (!student) throw new NotFoundException('Student not found');
 
     if (user.role === 'student' && String(student.userId) !== String(user.id)) {
@@ -154,19 +180,25 @@ export class StudentsService {
   }
 
   async adminUpdateStudent(id: string, body: any) {
-    const { year, semester, graduationYear, cgpa, ...rest } = body;
+    const { year, semester, graduationYear, cgpa, counsellorId, ...rest } = body;
     const updates: any = { ...rest };
     if (year !== undefined) updates.year = Number(year);
     if (semester !== undefined) updates.semester = Number(semester);
     if (graduationYear !== undefined)
       updates.graduationYear = graduationYear ? Number(graduationYear) : null;
     if (cgpa !== undefined) updates.cgpa = cgpa ? Number(cgpa) : null;
+    if (counsellorId !== undefined) updates.counsellorId = counsellorId || null;
 
     const student = await this.prisma.student.update({
       where: { id },
       data: updates,
     });
+    
     if (!student) throw new NotFoundException('Student not found');
-    return { student };
+
+    // Trigger auto-assignment immediately if counsellorId provided
+    await this.adminService.autoAssignStudent(id);
+
+    return student;
   }
 }

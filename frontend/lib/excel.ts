@@ -1,7 +1,5 @@
 "use client";
 
-import * as XLSX from "xlsx";
-
 const normalizeKey = (value: string) =>
   value
     .trim()
@@ -11,6 +9,7 @@ const normalizeKey = (value: string) =>
 export type ParsedRow = Record<string, string | number | null>;
 
 export async function readExcelFile(file: File): Promise<ParsedRow[]> {
+  const XLSX = await import("xlsx");
   const arrayBuffer = await file.arrayBuffer();
   const workbook = XLSX.read(arrayBuffer, { type: "array" });
   const sheetName = workbook.SheetNames[0];
@@ -28,7 +27,7 @@ export async function readExcelFile(file: File): Promise<ParsedRow[]> {
   });
 }
 
-export function downloadExcelFile({
+export async function downloadExcelFile({
   rows,
   fileName,
   sheetName = "Sheet1",
@@ -39,6 +38,7 @@ export function downloadExcelFile({
   sheetName?: string;
   hyperlinkColumns?: string[];
 }) {
+  const XLSX = await import("xlsx");
   const worksheet = XLSX.utils.json_to_sheet(rows);
   const headers = rows.length > 0 ? Object.keys(rows[0]) : [];
 

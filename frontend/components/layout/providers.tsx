@@ -13,7 +13,21 @@ type AuthState = {
 const AuthContext = createContext<AuthState | null>(null);
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 5 * 60 * 1000,
+            gcTime: 15 * 60 * 1000,
+            refetchOnMount: false,
+            refetchOnReconnect: false,
+            refetchOnWindowFocus: false,
+            retry: 1,
+          },
+        },
+      }),
+  );
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
 
@@ -36,6 +50,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       token,
       user,
       setSession: (payload: { token: string; user: AuthUser } | null) => {
+        queryClient.clear();
         setToken(payload?.token ?? null);
         setUser(payload?.user ?? null);
         if (payload) {
@@ -45,7 +60,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         }
       },
     }),
-    [token, user]
+    [queryClient, token, user]
   );
 
   return (

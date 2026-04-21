@@ -57,7 +57,7 @@ export class AuthService {
     if (!user) {
       // If not found by email, try finding student by registration number
       const normalizedStudentId = normalizedIdentifier.toUpperCase();
-      student = await this.prisma.student.findUnique({
+      const student = await this.prisma.student.findUnique({
         where: { studentId: normalizedStudentId },
       });
 
@@ -65,6 +65,16 @@ export class AuthService {
         user = await this.prisma.user.findUnique({
           where: { id: student.userId },
         });
+      } else {
+        // Finally try finding faculty by employee ID
+        const faculty = await this.prisma.faculty.findUnique({
+          where: { employeeId: normalizedIdentifier.toUpperCase() },
+        });
+        if (faculty) {
+          user = await this.prisma.user.findUnique({
+            where: { id: faculty.userId },
+          });
+        }
       }
     }
 
@@ -161,6 +171,7 @@ export class AuthService {
         graduationYear: payload.graduationYear,
         email: payload.email,
         phone: payload.phone,
+        section: payload.section,
       },
     });
 
@@ -190,6 +201,15 @@ export class AuthService {
           where: { id: student.userId },
         });
       }
+    } else if (payload.role === 'faculty') {
+      const faculty = await this.prisma.faculty.findUnique({
+        where: { employeeId: normalizedIdentifier.toUpperCase() },
+      });
+      if (faculty) {
+        user = await this.prisma.user.findUnique({
+          where: { id: faculty.userId },
+        });
+      }
     } else {
       user = await this.prisma.user.findUnique({
         where: { email: normalizedIdentifier.toLowerCase() },
@@ -205,6 +225,11 @@ export class AuthService {
         ? await this.prisma.student.findUnique({ where: { userId: user.id } })
         : null;
 
+    const faculty =
+      user.role === 'faculty'
+        ? await this.prisma.faculty.findUnique({ where: { userId: user.id } })
+        : null;
+
     return {
       token: await this.signToken(String(user.id), user.role),
       user: {
@@ -214,15 +239,22 @@ export class AuthService {
         role: user.role,
         department: user.department,
         studentId: student?.studentId,
+        employeeId: faculty?.employeeId,
       },
     };
   }
 
   async me(user: any) {
-    const student =
-      user.role === 'student'
-        ? await this.prisma.student.findUnique({ where: { userId: user.id } })
-        : null;
+    let studentId: string | undefined;
+    let employeeId: string | undefined;
+
+    if (user.role === 'student') {
+      const s = await this.prisma.student.findUnique({ where: { userId: user.id } });
+      studentId = s?.studentId;
+    } else if (user.role === 'faculty') {
+      const f = await this.prisma.faculty.findUnique({ where: { userId: user.id } });
+      employeeId = f?.employeeId;
+    }
 
     return {
       user: {
@@ -231,7 +263,8 @@ export class AuthService {
         email: user.email,
         role: user.role,
         department: user.department,
-        studentId: student?.studentId,
+        studentId,
+        employeeId,
       },
     };
   }

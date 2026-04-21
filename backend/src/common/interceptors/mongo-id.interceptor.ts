@@ -54,8 +54,16 @@ const attachMongoId = (data: any, seen = new WeakMap<object, any>()): any => {
 export class MongoIdInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const response = context.switchToHttp().getResponse();
-    return next
-      .handle()
-      .pipe(map((data) => (data === response ? data : attachMongoId(data))));
+    return next.handle().pipe(
+      map((data) => {
+        if (data === response) return data;
+        try {
+          return attachMongoId(data);
+        } catch (error) {
+          console.error('MongoIdInterceptor failed:', error);
+          return data;
+        }
+      }),
+    );
   }
 }

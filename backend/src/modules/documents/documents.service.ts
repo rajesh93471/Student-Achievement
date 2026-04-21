@@ -39,16 +39,56 @@ export class DocumentsService {
     return createUploadUrl({ key, contentType });
   }
 
-  async listDocuments(user: any) {
-    const student = await this.prisma.student.findUnique({
-      where: { userId: user.id },
-    });
-    if (!student) throw new NotFoundException('Student profile not found');
+  async listDocuments(user: any, query: any = {}) {
+    const criteria: any = {};
+
+    if (user.role === 'admin' || user.role === 'faculty') {
+      if (query.department) criteria.student = { department: query.department };
+      if (query.graduationYear) {
+        criteria.student = {
+          ...(criteria.student || {}),
+          graduationYear: Number(query.graduationYear),
+        };
+      }
+    } else {
+      const student = await this.prisma.student.findUnique({
+        where: { userId: user.id },
+      });
+      if (!student) throw new NotFoundException('Student profile not found');
+      criteria.studentId = student.id;
+    }
+
+    if (query.type) criteria.type = query.type;
+
     const documents = await this.prisma.document.findMany({
-      where: { studentId: student.id },
+      where: criteria,
+      include: {
+        student: {
+          select: {
+            fullName: true,
+            studentId: true,
+            department: true,
+            graduationYear: true,
+            section: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
-    return { documents };
+
+    const hydratedDocuments = await Promise.all(
+      documents.map(async (doc) => {
+        if (doc.fileUrl || !doc.fileKey) return doc;
+        try {
+          const payload = await createDownloadUrl({ key: doc.fileKey });
+          return { ...doc, fileUrl: payload.downloadUrl };
+        } catch {
+          return doc;
+        }
+      }),
+    );
+
+    return { documents: hydratedDocuments };
   }
 
   async saveDocument(user: any, body: any) {

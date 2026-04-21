@@ -148,7 +148,9 @@ export default function AdminStudentsPage() {
       nav={[
         { label: "Overview", href: "/admin" },
         { label: "Students", href: "/admin/students" },
+        { label: "Faculty Management", href: "/admin/faculty" },
         { label: "Student achievements", href: "/admin/student-achievements" },
+        { label: "Student documents", href: "/admin/student-documents" },
         { label: "Analytics", href: "/admin/analytics" },
         { label: "Reports", href: "/admin/reports" },
       ]}
@@ -219,9 +221,9 @@ export default function AdminStudentsPage() {
                     <ul className="list-disc pl-3 space-y-1.5 text-slate-300">
                       <li><strong className="text-white">studentId</strong> (Mandatory, e.g. 231FA04023)</li>
                       <li><strong>fullName</strong>, <strong>email</strong> (Required for new enrollments)</li>
-                      <li><strong>department/branch</strong>, <strong>program/course</strong></li>
+                      <li><strong>department/branch</strong>, <strong>program/course</strong>, <strong>section/sectioncode</strong></li>
                       <li><strong>year</strong> (1-4 or I-IV), <strong>semester</strong> (1-2 or I-II)</li>
-                      <li><strong>cgpa</strong>, <strong>graduationYear</strong></li>
+                      <li><strong>cgpa</strong>, <strong>graduationYear</strong>, <strong>counsellor_name</strong></li>
                     </ul>
                     <div className="mt-3 pt-3 border-t border-white/5 text-[9px] italic text-slate-400 leading-relaxed">
                       Columns map automatically (e.g. "Reg Number" → studentId).
@@ -237,7 +239,7 @@ export default function AdminStudentsPage() {
                 <input
                   type="file"
                   className="hidden"
-                  accept=".xlsx"
+                  accept=".xlsx,.csv"
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
@@ -256,7 +258,7 @@ export default function AdminStudentsPage() {
                       setBulkMessage(`Bulk update: ${res.success} succeeded, ${res.failed} failed.`);
                       await queryClient.invalidateQueries({ queryKey: ["admin-students"] });
                     } catch (err: any) {
-                      setFormError(err?.message || "Bulk update failed. Check Excel format.");
+                      setFormError(err?.message || "Bulk update failed. Check Excel/CSV format.");
                     }
                   }}
                 />
@@ -336,12 +338,13 @@ export default function AdminStudentsPage() {
                            <button onClick={() => setShowEnrollHelp(false)} className="text-slate-500 hover:text-white">✕</button>
                         </div>
                         <ul className="text-[10px] space-y-1 text-slate-300">
-                          <li>• <strong>studentId, fullName</strong></li>
-                          <li>• <strong>email</strong>, <strong>department/branch</strong></li>
-                          <li>• <strong>program/course</strong></li>
-                          <li>• <strong>year (1-4/I-IV), semester (1-2/I-II)</strong></li>
-                          <li>• <strong>graduationYear, password</strong></li>
+                          <li>• <strong>studentId, fullName</strong> <span className="opacity-50">(Mandatory)</span></li>
+                          <li>• <strong>email, dept, program, year</strong> <span className="opacity-50">(Mandatory)</span></li>
+                          <li>• <strong>semester, section/sectioncode, counsellor_name, counsellorId, gradYear, password</strong> <span className="opacity-50">(Optional)</span></li>
                         </ul>
+                        <div className="mt-3 pt-3 border-t border-white/5 text-[9px] italic text-slate-400 leading-relaxed">
+                          Field Support: <strong>Year</strong> accepts Roman (I-IV) or Normal (1-4) numbers. <strong>Password</strong> defaults to <span className="text-white">temp123</span> if omitted.
+                        </div>
                         <div className="mt-3 pt-3 border-t border-white/5 text-[8px] italic text-slate-400 leading-relaxed">
                           All studentId entries must be unique to avoid conflicts.
                         </div>
@@ -354,7 +357,7 @@ export default function AdminStudentsPage() {
                     <input
                       type="file"
                       className="hidden"
-                      accept=".xlsx"
+                      accept=".xlsx,.csv"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
@@ -373,7 +376,7 @@ export default function AdminStudentsPage() {
                           setBulkMessage(`Bulk enrollment: ${res.success} succeeded, ${res.failed} failed.`);
                           await queryClient.invalidateQueries({ queryKey: ["admin-students"] });
                         } catch (err: any) {
-                          setFormError(err?.message || "Excel upload failed. Check format.");
+                          setFormError(err?.message || "Excel/CSV upload failed. Check format.");
                         }
                       }}
                     />
@@ -396,10 +399,12 @@ export default function AdminStudentsPage() {
                   {[
                     { n: "name", l: "Full Name", p: "e.g. Ananya Sharma", r: true },
                     { n: "email", l: "Email Address", p: "e.g. ananya@vignan.edu", r: true, t: "email" },
-                    { n: "password", l: "Temporary Password", p: "Set a password", r: true, t: "password" },
+                    { n: "password", l: "Temporary Password", p: "Optional: defaults to temp123", r: false, t: "password" },
                     { n: "studentId", l: "Reg Number", p: "e.g. 231FA04023", r: true },
                     { n: "department", l: "Department", p: "e.g. CSE", r: true },
                     { n: "program", l: "Program", p: "e.g. B.Tech", r: true },
+                    { n: "section", l: "Section", p: "e.g. A", r: false },
+                    { n: "counsellorId", l: "Counsellor ID", p: "Faculty Employee ID (EMP001)", r: false },
                   ].map(f => (
                     <div key={f.n}>
                       <label className={labelClasses}>{f.l}</label>
@@ -410,19 +415,21 @@ export default function AdminStudentsPage() {
                   <div>
                     <label className={labelClasses}>Year of Study</label>
                     <Select name="year" required>
-                       {[1, 2, 3, 4].map(y => <option key={y} value={y}>{romanYears[y]}</option>)}
+                       <option value="">Select Year</option>
+                       {[1, 2, 3, 4].map(y => <option key={y} value={y}>{romanYears[y]} ({y})</option>)}
                     </Select>
                   </div>
                   <div>
                     <label className={labelClasses}>Current Semester</label>
-                    <Select name="semester" required>
+                    <Select name="semester">
+                       <option value="">Select (Optional)</option>
                        <option value={1}>1</option>
                        <option value={2}>2</option>
                     </Select>
                   </div>
                   <div>
                     <label className={labelClasses}>Graduation Year</label>
-                    <input name="graduationYear" className={inputClasses} type="number" placeholder="e.g. 2027" />
+                    <input name="graduationYear" className={inputClasses} type="number" placeholder="2027" />
                   </div>
 
                   <div className="lg:col-span-3 pt-6 border-t border-surface-100 flex items-center justify-between">
@@ -554,7 +561,7 @@ export default function AdminStudentsPage() {
                        <div><label className={labelClasses}>Program</label><input name="program" className={cn(inputClasses, "py-2 px-3")} defaultValue={selectedStudent?.program} /></div>
                        <div><label className={labelClasses}>Year</label>
                          <Select name="year" className="py-2 px-3" defaultValue={selectedStudent?.year}>
-                           {[1,2,3,4].map(y => <option key={y} value={y}>{romanYears[y]}</option>)}
+                           {[1,2,3,4].map(y => <option key={y} value={y}>{romanYears[y]} ({y})</option>)}
                          </Select>
                        </div>
                        <div><label className={labelClasses}>Sem</label>
@@ -564,7 +571,12 @@ export default function AdminStudentsPage() {
                        </div>
                        <div><label className={labelClasses}>CGPA</label><input name="cgpa" className={cn(inputClasses, "py-2 px-3")} type="number" step="0.01" defaultValue={selectedStudent?.cgpa} /></div>
                        <div><label className={labelClasses}>Phone</label><input name="phone" className={cn(inputClasses, "py-2 px-3")} defaultValue={selectedStudent?.phone} /></div>
-                       <div><label className={labelClasses}>Graduation Year</label><input name="graduationYear" className={cn(inputClasses, "py-2 px-3")} type="number" placeholder="2027" defaultValue={selectedStudent?.graduationYear} /></div>
+                       <div><label className={labelClasses}>Section</label><input name="section" className={cn(inputClasses, "py-2 px-3")} defaultValue={selectedStudent?.section} /></div>
+                       <div>
+                         <label className={labelClasses}>Graduation Year</label>
+                         <input name="graduationYear" className={cn(inputClasses, "py-2 px-3")} type="number" placeholder="2027" defaultValue={selectedStudent?.graduationYear} />
+                       </div>
+                       <div><label className={labelClasses}>Counsellor ID</label><input name="counsellorId" className={cn(inputClasses, "py-2 px-3")} placeholder="EMP001" defaultValue={selectedStudent?.counsellorId} /></div>
                        
                        <div className="sm:col-span-2 lg:col-span-4 pt-4 border-t border-surface-50 flex justify-end">
                           <button type="submit" className="bg-brand-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs hover:bg-brand-700 hover:-translate-y-0.5 transition-all shadow-md flex items-center gap-2">

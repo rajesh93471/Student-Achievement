@@ -11,6 +11,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { UsersModule } from './modules/users/users.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ChatbotModule } from './modules/chatbot/chatbot.module';
+import { FacultyModule } from './modules/faculty/faculty.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
@@ -30,6 +31,7 @@ import { join } from 'path';
     UsersModule,
     NotificationsModule,
     ChatbotModule,
+    FacultyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

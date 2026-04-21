@@ -213,7 +213,7 @@ export function AchievementForm({
             const uploaded = await uploadStudentFile({
               file,
               token,
-              apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/achieve",
+              apiUrl: process.env.NEXT_PUBLIC_API_URL || "/achieve/api",
             });
             payload = { ...payloadBase, certificateUrl: uploaded.fileUrl, certificateKey: uploaded.fileKey };
             setUploadMessage("Uploaded certificate.");
@@ -313,7 +313,8 @@ export function AchievementForm({
               <Label text="Academic year" />
               <Select
                 {...register("academicYear")}
-                title="Select the year this was achieved"
+                title="Academic year is fixed to your current status"
+                disabled
               >
                 {ACADEMIC_YEAR_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -324,7 +325,8 @@ export function AchievementForm({
               <Label text="Semester" />
               <Select
                 {...register("semester", { valueAsNumber: true })}
-                title="Select the semester this was achieved"
+                title="Semester is fixed to your current status"
+                disabled
               >
                 <option value={1}>Semester 1</option>
                 <option value={2}>Semester 2</option>

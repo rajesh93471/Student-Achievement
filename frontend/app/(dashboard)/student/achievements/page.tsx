@@ -38,8 +38,28 @@ const CATEGORY_STYLES: Record<string, string> = {
   research:      "bg-teal-100 text-teal-700 border-teal-200",
 };
 
+const TECHNICAL_CATEGORIES = new Set([
+  "academic",
+  "hackathon",
+  "competition",
+  "olympiad",
+  "certification",
+  "internship",
+  "project",
+  "research",
+  "other-technical",
+]);
+
+function getAchievementStream(category?: string) {
+  return TECHNICAL_CATEGORIES.has(category || "") ? "Technical" : "Non-technical";
+}
+
+function formatCategoryLabel(category?: string) {
+  return (category || "achievement").replace(/-/g, " ");
+}
+
 export default function StudentAchievementsPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const queryClient = useQueryClient();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingAchievement, setEditingAchievement] = useState<any>(null);
@@ -47,10 +67,20 @@ export default function StudentAchievementsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["student-achievements"],
+    queryKey: ["student-achievements", user?.id],
     queryFn: () => api<{ achievements: any[] }>("/achievements", { token }),
-    enabled: !!token,
+    enabled: !!token && !!user?.id,
   });
+
+  const { data: profileData } = useQuery({
+    queryKey: ["student-profile", user?.id],
+    queryFn: () => api<{ student: any }>("/students/me", { token }),
+    enabled: !!token && !!user?.id,
+  });
+
+  const student = profileData?.student;
+  const currentAcademicYear = student ? `Year ${student.year}` : undefined;
+  const currentSemester = student?.semester;
 
   const achievements = data?.achievements || [];
 
@@ -119,15 +149,6 @@ export default function StudentAchievementsPage() {
         { label: "Achievements", href: "/student/achievements" },
         { label: "Documents",    href: "/student/documents" },
       ]}
-      actions={
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all shadow-lg active:scale-95"
-        >
-          <Plus size={16} />
-          Add New Achievement
-        </button>
-      }
     >
       <div className="flex flex-col gap-6">
         
@@ -150,15 +171,25 @@ export default function StudentAchievementsPage() {
             ))}
           </div>
           
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input 
-              type="text"
-              placeholder="Search achievements..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-surface-200 rounded-2xl text-sm focus:border-brand-500 focus:ring-4 focus:ring-brand-100 outline-none transition-all"
-            />
+          <div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:items-center">
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-brand-700 transition-all shadow-lg active:scale-95 whitespace-nowrap"
+            >
+              <Plus size={16} />
+              Add New Achievement
+            </button>
+
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input 
+                type="text"
+                placeholder="Search achievements..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-surface-200 rounded-2xl text-sm focus:border-brand-500 focus:ring-4 focus:ring-brand-100 outline-none transition-all"
+              />
+            </div>
           </div>
         </div>
 
@@ -175,6 +206,7 @@ export default function StudentAchievementsPage() {
           ) : (
             filteredAchievements.map((item, idx) => {
               const bgClass = CATEGORY_STYLES[item.category] || "bg-slate-50 text-slate-500 border-slate-100";
+              const streamLabel = getAchievementStream(item.category);
               
               return (
                 <div 
@@ -184,9 +216,14 @@ export default function StudentAchievementsPage() {
                 >
                   <div className="p-6 sm:p-8 flex-1">
                     <div className="flex items-start justify-between gap-4 mb-4">
-                      <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border shadow-sm ${bgClass}`}>
-                        {item.category}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border shadow-sm ${bgClass}`}>
+                          {formatCategoryLabel(item.category)}
+                        </span>
+                        <span className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border border-brand-200 bg-brand-50 text-brand-700 shadow-sm">
+                          {streamLabel}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                          <button 
                             onClick={() => setEditingAchievement(item)}
@@ -262,6 +299,8 @@ export default function StudentAchievementsPage() {
         <div className="p-1">
           <AchievementForm 
             token={token}
+            defaultAcademicYear={currentAcademicYear}
+            defaultSemester={currentSemester}
             onSubmit={async (values) => {
               await createMutation.mutateAsync(values);
             }}
@@ -279,6 +318,8 @@ export default function StudentAchievementsPage() {
           <AchievementForm 
             token={token}
             initialValues={editingAchievement}
+            defaultAcademicYear={currentAcademicYear}
+            defaultSemester={currentSemester}
             onSubmit={async (values) => {
               await updateMutation.mutateAsync({ id: editingAchievement.id, values });
             }}

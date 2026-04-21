@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { StatCard } from "@/components/dashboard/stat-card";
-import { DepartmentBarChart, GrowthLineChart } from "@/components/charts/overview-chart";
+
+const DepartmentBarChart = dynamic(() => import("@/components/charts/overview-chart").then(mod => mod.DepartmentBarChart), { ssr: false });
+const GrowthLineChart = dynamic(() => import("@/components/charts/overview-chart").then(mod => mod.GrowthLineChart), { ssr: false });
+
 import { useAuth } from "@/components/layout/providers";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -49,7 +54,9 @@ export default function AdminDashboardPage() {
       nav={[
         { label: "Overview", href: "/admin" },
         { label: "Students", href: "/admin/students" },
+        { label: "Faculty Management", href: "/admin/faculty" },
         { label: "Student achievements", href: "/admin/student-achievements" },
+        { label: "Student documents", href: "/admin/student-documents" },
         { label: "Analytics", href: "/admin/analytics" },
         { label: "Reports", href: "/admin/reports" },
       ]}
@@ -66,7 +73,9 @@ export default function AdminDashboardPage() {
       <section className="grid grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
         <StatCard label="Students" value={data?.metrics.totalStudents ?? 0} helper="Total active profiles" />
         <StatCard label="Achievements" value={data?.metrics.totalAchievements ?? 0} helper="System-wide entries" />
-        <StatCard label="Documents" value={data?.metrics.totalDocuments ?? 0} helper="Securely stored files" />
+        <Link href="/admin/student-documents" className="block outline-none focus:ring-2 focus:ring-brand-200 rounded-2xl transition-shadow">
+          <StatCard label="Documents" value={data?.metrics.totalDocuments ?? 0} helper="Securely stored files" />
+        </Link>
       </section>
 
       {/* CHARTS */}

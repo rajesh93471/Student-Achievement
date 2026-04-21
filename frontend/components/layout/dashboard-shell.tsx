@@ -148,6 +148,7 @@ export function DashboardShell({
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={cn(
                   "font-sans text-[15px] font-semibold px-4 py-3 rounded-xl transition-all border flex items-center w-full uppercase tracking-tight",
                   isActive 
@@ -165,6 +166,7 @@ export function DashboardShell({
         <div className="p-3 border-t border-surface-200 flex flex-col gap-1.5 shrink-0 bg-surface-50/50">
            <Link
               href="/settings"
+              prefetch={false}
               className={cn(
                 "font-sans text-[15px] font-semibold px-4 py-3 rounded-xl transition-all border flex items-center gap-2 uppercase tracking-tight",
                 pathname === "/settings" 
@@ -259,7 +261,13 @@ export function DashboardShell({
               <button
                 className="flex items-center gap-2 px-3 py-1.5 bg-surface-50 border border-surface-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-white hover:border-surface-300 transition-colors max-w-[140px] truncate"
                 type="button"
-                onClick={() => router.push("/settings")}
+                onClick={() => {
+                  if (user?.role === "faculty") {
+                    router.push("/faculty/profile");
+                  } else {
+                    router.push("/settings");
+                  }
+                }}
                 title="Account Settings"
               >
                 <UserCircle2 size={16} className="text-brand-500 shrink-0" />
